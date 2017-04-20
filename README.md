@@ -13,7 +13,7 @@ Core Features
 *   Command and Control Analytics
     *   Identify Beaconing in your environment (works with Suricata output and ElasticSearch)
 *   Feature Extraction
-    *   Helper utilitie functions to filter out the noise.
+    *   Helper utility functions to filter out the noise.
 *   Alexa, Umbrella, and Majestic Million (coming soon)
 *   WHOIS IP Lookup
 *   Pre-build machine learning classifiers
@@ -33,9 +33,6 @@ from flare.analytics.command_control import elasticBeacon
 eb = elasticBeacon(es_host='localhost')
 beacons = eb.find_beacons(group=True, focus_outbound=True)
 ```
-
-
-
 
 
 Domain Features
@@ -66,7 +63,7 @@ flare.tools.iputils
 Data Science Features
 ---------------------
 ```python
-from flare.utils.alexa import data_features, dga_classification
+from flare.utils.alexa import dga_classification
 
 dga_c = dga_classification()
 
@@ -75,8 +72,11 @@ Legit
 
 print dga_c.predict('39al31ak3')
 dga
+```
 
-######################
+
+```python
+from flare.utils.alexa import data_features
 ds_f = data_features()
 
 print ds_f.entropy('akd93ka8a91a')
@@ -87,3 +87,4 @@ True
 
 ds_f.ip_matcher('39.993.9.1')
 False
+```
