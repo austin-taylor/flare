@@ -1,0 +1,22 @@
+#!/usr/bin/env python
+
+import argparse
+
+from flare.tools.iputils import hex_to_ip
+
+
+def main():
+    arg_parser = argparse.ArgumentParser()
+
+    arg_parser.add_argument(
+        'hex_value', help='The hex value to translate to an IPv4 address')
+
+    args = arg_parser.parse_args()
+
+    query_i = args.hex_value
+
+    print hex_to_ip(query_i)
+
+
+if __name__ == '__main__':
+    main()

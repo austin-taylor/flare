@@ -1,0 +1,15 @@
+# Modules that have multiple dependencies and cannot be installed through PIP
+sklearn
+
+# Modules available through PyPy
+backport-ipaddress==0.1
+pyasn==1.5.0b7
+Jinja2==2.8
+MarkupSafe==0.23
+requests==2.11.1
+ipaddr==2.1.11
+tldextract==2.0.1
+python-geoip
+python-geoip-geolite2
+openpyxl==2.3.5
+elasticsearch
