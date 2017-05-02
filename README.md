@@ -11,7 +11,8 @@ Getting Started
 Currently supports python 2.7
 
 ```python
-pip -r requirements.txt
+sudo pip install -r requirements.txt
+
 python setup.py install
 ```
 
