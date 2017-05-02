@@ -45,7 +45,11 @@ beacons = eb.find_beacons(group=True, focus_outbound=True)
 Also available in commandline:
 
 ```bash
-flare_beacon --group --whois --focus_outbound -mo=100 --csv_out=beacon_results100.csv
+flare_beacon --whois --focus_outbound -mo=100 --csv_out=beacon_results.csv
+
+or
+
+flare_beacon --group --whois --focus_outbound -mo=100 --html_out=beacon_results.html
 ```
 
 
