@@ -5,6 +5,15 @@
 
 Flare is a network analytic framework designed for data scientists, security researchers, and network professionals. Written in Python, it is designed for rapid prototyping and development of behavioral analytics, and intended to make identifying malicious behavior in networks as simple as possible.
 
+Getting Started
+---------------
+
+Currently supports python 2.7
+
+```python
+pip -r requirements.txt
+python setup.py install
+```
 
 Core Features
 -------------
@@ -31,6 +40,12 @@ from flare.analytics.command_control import elasticBeacon
 
 eb = elasticBeacon(es_host='localhost')
 beacons = eb.find_beacons(group=True, focus_outbound=True)
+```
+
+Also available in commandline:
+
+```bash
+flare_beacon --group --whois --focus_outbound -mo=100 --csv_out=beacon_results100.csv
 ```
 
 

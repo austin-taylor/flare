@@ -1,8 +1,21 @@
 # coding: utf-8
+import sys
+from flare.tools.utils import bcolors
 
-import pandas as pd
+try:
+    import pandas as pd
+except:
+    print("Please make sure you have pandas installed. pip -r requirements.txt or pip install pandas")
+    sys.exit(0)
+
+try:
+    from elasticsearch import Elasticsearch, helpers
+except:
+    print("Please make sure you have elasticsearch module installed. pip -r requirements.txt or pip install elasticsearch")
+    sys.exit(0)
+
+
 from multiprocessing import Process, JoinableQueue, Lock, Manager
-from elasticsearch import Elasticsearch, helpers
 from flare.tools.iputils import private_check, multicast_check, reserved_check
 from flare.tools.whoisip import WhoisLookup
 import time
@@ -28,6 +41,7 @@ class elasticBeacon(object):
                  threads=8,
                  period=24,
                  es_host='localhost',
+                 es_port=9200,
                  es_timeout=480,
                  kibana_version='5',
                  verbose=True):
@@ -56,11 +70,15 @@ class elasticBeacon(object):
         self.query = self.ver[self.kibana_version].values()[0]
         self.verbose = verbose
         self.whois = WhoisLookup()
+        self.info = '{info}[INFO]{endc}'.format(info=bcolors.OKBLUE, endc=bcolors.ENDC)
+        self.success = '{green}[SUCCESS]{endc}'.format(green=bcolors.OKGREEN, endc=bcolors.ENDC)
         self.fields = ['src_ip', 'dest_ip', 'dest_port', 'bytes_toserver','dest_degree', 'percent', 'interval']
 
         try:
-            self.es = Elasticsearch(es_host, timeout=es_timeout)
+            self.es = Elasticsearch(es_host, port=es_port, timeout=es_timeout)
+            self.vprint('{green}[SUCCESS]{endc} Connected to elasticsearch on {host}:{port}'.format(green=bcolors.OKGREEN, endc=bcolors.ENDC, host=es_host, port=str(es_port)))
         except Exception as e:
+            self.vprint(e)
             raise Exception(
                 "Could not connect to ElasticSearch -- Please verify your settings are correct and try again.")
 
@@ -69,6 +87,11 @@ class elasticBeacon(object):
         self.l_list = Lock()
         self.high_freq = None
         self.flow_data = self.run_query()
+
+
+    def vprint(self, msg):
+        if self.verbose:
+            print(msg)
 
     def hour_query(self, h, *fields):
         """
@@ -152,8 +175,7 @@ class elasticBeacon(object):
         return interval, mx_percent
 
     def run_query(self):
-        if self.verbose:
-            print("[+] Gathering flow data... this may take a while...")
+        self.vprint("{info} Gathering flow data... this may take a while...".format(info=self.info))
         query = self.hour_query(self.period, "src_ip", "dest_ip", "dest_port", "@timestamp", "flow.bytes_toserver",
                                 "flow_id")
         resp = helpers.scan(query=query, client=self.es, scroll="90m", index="logstash-flow*", timeout="10m")
@@ -193,7 +215,8 @@ class elasticBeacon(object):
                 self.l_list.release()
             q_job.task_done()
 
-    def find_beacons(self, group=True, focus_outbound=False, whois=True, csv_out=None):
+    def find_beacons(self, group=True, focus_outbound=False, whois=True, csv_out=None, html_out=None):
+
         for triad_id in self.high_freq:
             self.q_job.put(triad_id)
 
@@ -215,21 +238,33 @@ class elasticBeacon(object):
                                  columns=self.fields)
         beacon_df.interval = beacon_df.interval.astype(int)
         beacon_df['dest_degree'] = beacon_df.groupby('dest_ip')['dest_ip'].transform('count').fillna(0).astype(int)
+        self.vprint('{info} Calculating destination degree.'.format(info=self.info))
         if whois:
+            self.vprint('{info} Enriching IP addresses with whois information'.format(info=self.info))
             beacon_df['src_whois'] = beacon_df['src_ip'].apply(lambda ip: self.whois.get_name_by_ip(ip))
             beacon_df['dest_whois'] = beacon_df['dest_ip'].apply(lambda ip: self.whois.get_name_by_ip(ip))
 
         if focus_outbound:
+            self.vprint('{info} Applying outbound focus - filtering multicast, reserved, and private IP space'.format(info=self.info))
             beacon_df = beacon_df[(beacon_df.src_ip.apply(private_check)) &
                                         (~beacon_df.dest_ip.apply(multicast_check)) &
                                         (~beacon_df.dest_ip.apply(reserved_check)) &
                                         (~beacon_df.dest_ip.apply(private_check))]
-        if csv_out:
-            beacon_df.to_csv(csv_out)
+
         if group:
+            self.vprint('{info} Grouping by destination group IP'.format(info=self.info))
 
             self.fields.insert(self.fields.index('dest_ip'), 'dest_whois')
             beacon_df = pd.DataFrame(beacon_df.groupby(
                 self.fields).size())
             beacon_df.drop(0, axis=1, inplace=True)
+
+        if csv_out:
+            self.vprint('{success} Writing csv to {csv_name}'.format(csv_name=csv_out, success=self.success))
+            beacon_df.to_csv(csv_out)
+
+        if html_out:
+            self.vprint('{success} Writing html file to {html_out}'.format(html_out=html_out, success=self.success))
+            beacon_df.to_html(html_out)
+
         return beacon_df

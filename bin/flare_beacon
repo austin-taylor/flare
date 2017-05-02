@@ -1,0 +1,78 @@
+#!/usr/bin/env python
+
+
+#Written by Austin Taylor
+#www.austintaylor.io
+
+
+from flare.analytics.command_control import elasticBeacon
+from flare.tools.utils import bcolors
+import argparse
+import sys
+
+
+
+def main():
+    parser = argparse.ArgumentParser(description=""" Elastic Beacon is  designed to identify periodic communication between
+    network communicatiors. Future updates will allow for dynamic fields to be passed in.
+
+    If you do not allow your elastic search server to communicate externally, you can setup an
+    ssh tunnel by using ssh -NfL 9200:localhost:9200 username@yourserver
+
+    Otherwise, you'll need to adjust es_host to the IP address that is exposed to elasticSearch.""")
+
+    parser.add_argument('-eh', '--eshost', dest='eshost', default='localhost', help='IP address for Elasticsearch Host')
+    parser.add_argument('-ep', '--esport', dest='esport', default=9200, help='Port for Elasticsearch (9200 is default)')
+    parser.add_argument('-et', '--estimeout', dest='estimeout', type=int, default=480, help='Timeout value for query against Elasticsearch (Default is 480 seconds)')
+    parser.add_argument('-mo', '--min_occur', dest='min_occur', type=int, default=10, help='Minimum times of occurance for beacon (Default is 10)')
+    parser.add_argument('-mp', '--min_percent', dest='min_percent', type=int, default=5, help='Minimum percentage for beacon to be included in results (default is 5)')
+    parser.add_argument('-win', '--window', dest='window', default=2, type=int, help="""Size of window in seconds in which we group connections to determine percentage,
+                                                             using alarge window size can give inaccurate interval times, multiple windows contain all
+                                                             interesting packets, the first window to match is the interval (Default is 2)""")
+    parser.add_argument('-pd', '--period', dest='period', default=24, type=int, help='Number of hours to locate beacons for (Default is 24)')
+    parser.add_argument('-th', '--threads', dest='threads', default=8, type=int, help='Number of cores to use (may need to lower if you only have 4)')
+    parser.add_argument('-kv', '--kibana_version', dest='kibana_version', default='5', help='Version of Kibana -- (Default is 5)')
+    parser.add_argument('-gr', '--group', dest='group', action='store_true', default=False, help='Group output of results (will output as HTML)')
+    parser.add_argument('-who', '--whois', dest='whois', action='store_true', default=False, help='Enrich IP with WHOIS Info')
+    parser.add_argument('-fo', '--focus_outbound', dest='focus_outbound', action='store_true', default=False, help='Removes private & multicast IPs')
+    parser.add_argument('-csv', '--csv_out', dest='csv_out',  default=None, help='Name of CSV to be written')
+    parser.add_argument('-html', '--html_out', dest='html_out', default=None, help='Name of HTML File to be written (works best with group)')
+    parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', default=True, help='Prints status out to screen (defaults to True)')
+    args = parser.parse_args()
+
+    try:
+        if args.verbose:
+            print('{info}[INFO]{endc} Attempting to connect to elasticsearch...'.format(info=bcolors.OKBLUE, endc=bcolors.ENDC))
+
+        eb = elasticBeacon(es_host=args.eshost,
+                           es_port=args.esport,
+                           min_occur=args.min_occur,
+                           min_percent=args.min_percent,
+                           window=args.window,
+                           threads=args.threads,
+                           period=args.period,
+                           es_timeout=args.estimeout,
+                           kibana_version=args.kibana_version,
+                           verbose=args.verbose)
+
+    except Exception as e:
+        if args.verbose:
+            print('{red}ERROR: {error}{endc}'.format(red=bcolors.FAIL, error=e, endc=bcolors.ENDC))
+        sys.exit(0)
+
+    if eb:
+        beacons = eb.find_beacons(group=args.group,
+                                  whois=args.whois,
+                                  focus_outbound=args.focus_outbound,
+                                  csv_out=args.csv_out,
+                                  html_out=args.html_out)
+
+
+        if not args.html_out and not args.csv_out:
+            print('{info}[INFO]{endc} - csv_out and html_out not selected. Print results to screen.'.format(info=bcolors.OKBLUE, endc=bcolors.ENDC))
+            print(beacons)
+
+
+
+if __name__ == '__main__':
+    main()
