@@ -13,3 +13,4 @@ python-geoip
 python-geoip-geolite2
 openpyxl==2.3.5
 elasticsearch
+ConfigParser

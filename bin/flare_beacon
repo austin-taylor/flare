@@ -12,6 +12,8 @@ import sys
 
 
 
+
+
 def main():
     parser = argparse.ArgumentParser(description=""" Elastic Beacon is  designed to identify periodic communication between
     network communicatiors. Future updates will allow for dynamic fields to be passed in.
@@ -21,6 +23,7 @@ def main():
 
     Otherwise, you'll need to adjust es_host to the IP address that is exposed to elasticSearch.""")
 
+    parser.add_argument('-c', '--config', dest='config', required=False, default='elasticsearch.ini', help='Path of config file')
     parser.add_argument('-eh', '--eshost', dest='eshost', default='localhost', help='IP address for Elasticsearch Host')
     parser.add_argument('-ep', '--esport', dest='esport', default=9200, help='Port for Elasticsearch (9200 is default)')
     parser.add_argument('-et', '--estimeout', dest='estimeout', type=int, default=480, help='Timeout value for query against Elasticsearch (Default is 480 seconds)')
@@ -44,7 +47,8 @@ def main():
         if args.verbose:
             print('{info}[INFO]{endc} Attempting to connect to elasticsearch...'.format(info=bcolors.OKBLUE, endc=bcolors.ENDC))
 
-        eb = elasticBeacon(es_host=args.eshost,
+        eb = elasticBeacon(config_in=args.config,
+                           es_host=args.eshost,
                            es_port=args.esport,
                            min_occur=args.min_occur,
                            min_percent=args.min_percent,
