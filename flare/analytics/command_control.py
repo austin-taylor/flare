@@ -49,7 +49,7 @@ class elasticBeacon(object):
                  es_port=9200,
                  es_timeout=480,
                  es_index='logstash-flow-*',
-                 kibana_version='5',
+                 kibana_version='4',
                  verbose=True):
         """
 
@@ -65,11 +65,11 @@ class elasticBeacon(object):
         :param es_timeout: Sets timeout to 480 seconds
         :param kibana_version: 4 or 5 (query will depend on version)
         """
-        self.config_in = config_in
-        if self.config_in is not None:
+        #self.config_in = config_in
+        if config_in is not None:
             try:
-                self.config = flareConfig(self.config_in)
-                self.es_host = self.config.get('beacon', 'es_host')
+                self.config = flareConfig(config_in)
+		self.es_host = self.config.get('beacon', 'es_host')
                 self.es_port = int(self.config.get('beacon', 'es_port'))
                 self.es_index = self.config.get('beacon', 'es_index')
                 self.MIN_OCCURANCES = int(self.config.get('beacon','min_occur'))
@@ -78,16 +78,17 @@ class elasticBeacon(object):
                 self.NUM_PROCESSES = int(self.config.get('beacon','threads'))
                 self.period = int(self.config.get('beacon','period'))
                 self.es_timeout = int(self.config.get('beacon','es_timeout'))
-                self.kibana_version = kibana_version
+                self.kibana_version = self.config.get('beacon','kibana_version')
                 self.beacon_src_ip = self.config.get('beacon','field_source_ip')
                 self.beacon_dest_ip = self.config.get('beacon', 'field_destination_ip')
-                self.beacon_destination_port = int(self.config.get('beacon', 'field_destination_port'))
+                self.beacon_destination_port = self.config.get('beacon', 'field_destination_port')
                 self.beacon_timestamp = self.config.get('beacon', 'field_timestamp')
-                self.beacon_flow_bytes_toserver = int(self.config.get('beacon', 'field_flow_bytes_toserver'))
-                self.beacon_flow_id = int(self.config.get('beacon', 'field_flow_id'))
+                self.beacon_flow_bytes_toserver = self.config.get('beacon', 'field_flow_bytes_toserver')
+                self.beacon_flow_id = self.config.get('beacon', 'field_flow_id')
 
             except Exception as e:
                 print('{red}[FAIL]{endc} Could not properly load your config!\nReason: {e}'.format(red=bcolors.FAIL, endc=bcolors.ENDC, e=e))
+		sys.exit(0)
         else:
             self.es_host = es_host
             self.es_port = es_port
@@ -113,7 +114,6 @@ class elasticBeacon(object):
         self.whois = WhoisLookup()
         self.info = '{info}[INFO]{endc}'.format(info=bcolors.OKBLUE, endc=bcolors.ENDC)
         self.success = '{green}[SUCCESS]{endc}'.format(green=bcolors.OKGREEN, endc=bcolors.ENDC)
-        self.es_index = es_index
         self.fields = [self.beacon_src_ip, self.beacon_dest_ip, self.beacon_destination_port, 'bytes_toserver','dest_degree', 'percent', 'interval']
 
         try:
@@ -218,11 +218,14 @@ class elasticBeacon(object):
 
     def run_query(self):
         self.vprint("{info} Gathering flow data... this may take a while...".format(info=self.info))
-        query = self.hour_query(self.period, self.beacon_src_ip, self.beacon_dest_ip, self.beacon_destination_port, self.beacon_timestamp, 'flow.'+self.beacon_flow_bytes_toserver, self.beacon_flow_id)
+        query = self.hour_query(self.period, self.beacon_src_ip, self.beacon_dest_ip, self.beacon_destination_port, self.beacon_timestamp, self.beacon_flow_bytes_toserver, self.beacon_flow_id)
+	print query
         resp = helpers.scan(query=query, client=self.es, scroll="90m", index=self.es_index, timeout="10m")
         df = pd.DataFrame([rec['_source'] for rec in resp])
+	print df.columns
         df['dest_port'] = df[self.beacon_destination_port].fillna(0).astype(int)
-        df.flow = df.flow.apply(lambda x: x.get(self.beacon_flow_bytes_toserver))
+	if 'flow' in df.columns:
+	        df[self.beacon_flow_bytes_toserver] = df['flow'].apply(lambda x: x.get(self.beacon_flow_bytes_toserver))
         df['triad_id'] = (df[self.beacon_src_ip] + df[self.beacon_dest_ip] + df[self.beacon_destination_port].astype(str)).apply(hash)
         df['triad_freq'] = df.groupby('triad_id')['triad_id'].transform('count').fillna(0).astype(int)
         self.high_freq = df[df.triad_freq > self.MIN_OCCURANCES].groupby('triad_id').groups.keys()
@@ -246,11 +249,11 @@ class elasticBeacon(object):
             if percent > self.MIN_PERCENT:
                 PERCENT = str(int(percent))
                 WINDOW = str(window)
-                SRC_IP = work.src_ip.unique()[0]
-                DEST_IP = work.dest_ip.unique()[0]
-                DEST_PORT = str(int(work.dest_port.unique()[0]))
-                BYTES_TOSERVER = work.flow.unique()[0]
-                SRC_DEGREE = len(work.dest_ip.unique())
+                SRC_IP = work[self.beacon_src_ip].unique()[0]
+                DEST_IP = work[self.beacon_dest_ip].unique()[0]
+                DEST_PORT = str(int(work[self.beacon_destination_port].unique()[0]))
+                BYTES_TOSERVER = work[self.beacon_flow_bytes_toserver].unique()[0]
+                SRC_DEGREE = len(work[self.beacon_dest_ip].unique())
                 self.l_list.acquire()
                 beacon_list.append([SRC_IP, DEST_IP, DEST_PORT, BYTES_TOSERVER, SRC_DEGREE, PERCENT, WINDOW])
                 self.l_list.release()
@@ -276,7 +279,7 @@ class elasticBeacon(object):
 
         beacon_list = list(beacon_list)
         beacon_df = pd.DataFrame(beacon_list,
-                                 columns=self.fields)
+                                 columns=self.fields).dropna()
         beacon_df.interval = beacon_df.interval.astype(int)
         beacon_df['dest_degree'] = beacon_df.groupby(self.beacon_dest_ip)[self.beacon_dest_ip].transform('count').fillna(0).astype(int)
         self.vprint('{info} Calculating destination degree.'.format(info=self.info))
@@ -287,15 +290,16 @@ class elasticBeacon(object):
 
         if focus_outbound:
             self.vprint('{info} Applying outbound focus - filtering multicast, reserved, and private IP space'.format(info=self.info))
-            beacon_df = beacon_df[(beacon_df.src_ip.apply(private_check)) &
-                                        (~beacon_df.dest_ip.apply(multicast_check)) &
-                                        (~beacon_df.dest_ip.apply(reserved_check)) &
-                                        (~beacon_df.dest_ip.apply(private_check))]
+            beacon_df = beacon_df[(beacon_df[self.beacon_src_ip].apply(private_check)) &
+                                        (~beacon_df[self.beacon_dest_ip].apply(multicast_check)) &
+                                        (~beacon_df[self.beacon_dest_ip].apply(reserved_check)) &
+                                        (~beacon_df[self.beacon_dest_ip].apply(private_check))]
 
         if group:
             self.vprint('{info} Grouping by destination group IP'.format(info=self.info))
 
-            self.fields.insert(self.fields.index(self.beacon_dest_ip), 'dest_whois')
+	    if whois:
+	            self.fields.insert(self.fields.index(self.beacon_dest_ip), 'dest_whois')
             beacon_df = pd.DataFrame(beacon_df.groupby(
                 self.fields).size())
             beacon_df.drop(0, axis=1, inplace=True)

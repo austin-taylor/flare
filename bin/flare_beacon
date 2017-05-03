@@ -12,8 +12,6 @@ import sys
 
 
 
-
-
 def main():
     parser = argparse.ArgumentParser(description=""" Elastic Beacon is  designed to identify periodic communication between
     network communicatiors. Future updates will allow for dynamic fields to be passed in.
@@ -56,7 +54,7 @@ def main():
                            threads=args.threads,
                            period=args.period,
                            es_timeout=args.estimeout,
-                           kibana_version=args.kibana_version,
+                           #kibana_version=args.kibana_version,
                            verbose=args.verbose)
 
     except Exception as e:
