@@ -81,10 +81,10 @@ class elasticBeacon(object):
                 self.kibana_version = kibana_version
                 self.beacon_src_ip = self.config.get('beacon','field_source_ip')
                 self.beacon_dest_ip = self.config.get('beacon', 'field_destination_ip')
-                self.beacon_destination_port = self.config.get('beacon', 'field_destination_port')
+                self.beacon_destination_port = int(self.config.get('beacon', 'field_destination_port'))
                 self.beacon_timestamp = self.config.get('beacon', 'field_timestamp')
-                self.beacon_flow_bytes_toserver = self.config.get('beacon', 'field_flow_bytes_toserver')
-                self.beacon_flow_id = self.config.get('beacon', 'field_flow_id')
+                self.beacon_flow_bytes_toserver = int(self.config.get('beacon', 'field_flow_bytes_toserver'))
+                self.beacon_flow_id = int(self.config.get('beacon', 'field_flow_id'))
 
             except Exception as e:
                 print('{red}[FAIL]{endc} Could not properly load your config!\nReason: {e}'.format(red=bcolors.FAIL, endc=bcolors.ENDC, e=e))
