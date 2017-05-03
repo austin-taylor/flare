@@ -54,7 +54,7 @@ def main():
                            threads=args.threads,
                            period=args.period,
                            es_timeout=args.estimeout,
-                           #kibana_version=args.kibana_version,
+                           kibana_version=args.kibana_version,
                            verbose=args.verbose)
 
     except Exception as e:

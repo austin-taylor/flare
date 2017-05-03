@@ -85,6 +85,7 @@ class elasticBeacon(object):
                 self.beacon_timestamp = self.config.get('beacon', 'field_timestamp')
                 self.beacon_flow_bytes_toserver = self.config.get('beacon', 'field_flow_bytes_toserver')
                 self.beacon_flow_id = self.config.get('beacon', 'field_flow_id')
+                self.suricata_defaults = self.config.get('beacon','suricata_defaults')
 
             except Exception as e:
                 print('{red}[FAIL]{endc} Could not properly load your config!\nReason: {e}'.format(red=bcolors.FAIL, endc=bcolors.ENDC, e=e))
@@ -106,6 +107,7 @@ class elasticBeacon(object):
             self.beacon_timestamp = '@timestamp'
             self.beacon_flow_bytes_toserver = 'bytes_toserver'
             self.beacon_flow_id = 'flow_id'
+            self.suricata_defaults = False
 
         self.ver = {'4': {'filtered': 'query'}, '5': {'bool': 'must'}}
         self.filt = self.ver[self.kibana_version].keys()[0]
@@ -218,14 +220,20 @@ class elasticBeacon(object):
 
     def run_query(self):
         self.vprint("{info} Gathering flow data... this may take a while...".format(info=self.info))
-        query = self.hour_query(self.period, self.beacon_src_ip, self.beacon_dest_ip, self.beacon_destination_port, self.beacon_timestamp, self.beacon_flow_bytes_toserver, self.beacon_flow_id)
-	print query
+
+        FLOW_BYTES = self.beacon_flow_bytes_toserver
+        if self.suricata_defaults:
+            FLOW_BYTES = 'flow.' + FLOW_BYTES
+
+        query = self.hour_query(self.period, self.beacon_src_ip, self.beacon_dest_ip, self.beacon_destination_port,
+                                self.beacon_timestamp, FLOW_BYTES, self.beacon_flow_id)
         resp = helpers.scan(query=query, client=self.es, scroll="90m", index=self.es_index, timeout="10m")
         df = pd.DataFrame([rec['_source'] for rec in resp])
-	print df.columns
         df['dest_port'] = df[self.beacon_destination_port].fillna(0).astype(int)
+
 	if 'flow' in df.columns:
 	        df[self.beacon_flow_bytes_toserver] = df['flow'].apply(lambda x: x.get(self.beacon_flow_bytes_toserver))
+
         df['triad_id'] = (df[self.beacon_src_ip] + df[self.beacon_dest_ip] + df[self.beacon_destination_port].astype(str)).apply(hash)
         df['triad_freq'] = df.groupby('triad_id')['triad_id'].transform('count').fillna(0).astype(int)
         self.high_freq = df[df.triad_freq > self.MIN_OCCURANCES].groupby('triad_id').groups.keys()
