@@ -3,6 +3,7 @@ import sys
 from flare.tools.utils import bcolors
 from flare.base.config import flareConfig
 
+
 try:
     import pandas as pd
 except:
@@ -50,7 +51,8 @@ class elasticBeacon(object):
                  es_timeout=480,
                  es_index='logstash-flow-*',
                  kibana_version='4',
-                 verbose=True):
+                 verbose=True,
+                 debug=False):
         """
 
         :param min_occur: Minimum number of triads to be considered beaconing
@@ -61,7 +63,7 @@ class elasticBeacon(object):
          so the first window to match is the interval
         :param threads: Number of cores to use
         :param period: Number of hours to locate beacons for
-        :param es_host: IP Adddress of elasticsearch host (default is localhost)
+        :param es_host: IP Address of elasticsearch host (default is localhost)
         :param es_timeout: Sets timeout to 480 seconds
         :param kibana_version: 4 or 5 (query will depend on version)
         """
@@ -69,7 +71,7 @@ class elasticBeacon(object):
         if config_in is not None:
             try:
                 self.config = flareConfig(config_in)
-		self.es_host = self.config.get('beacon', 'es_host')
+                self.es_host = self.config.get('beacon', 'es_host')
                 self.es_port = int(self.config.get('beacon', 'es_port'))
                 self.es_index = self.config.get('beacon', 'es_index')
                 self.MIN_OCCURANCES = int(self.config.get('beacon','min_occur'))
@@ -89,7 +91,8 @@ class elasticBeacon(object):
 
             except Exception as e:
                 print('{red}[FAIL]{endc} Could not properly load your config!\nReason: {e}'.format(red=bcolors.FAIL, endc=bcolors.ENDC, e=e))
-		sys.exit(0)
+                sys.exit(0)
+
         else:
             self.es_host = es_host
             self.es_port = es_port
@@ -113,6 +116,7 @@ class elasticBeacon(object):
         self.filt = self.ver[self.kibana_version].keys()[0]
         self.query = self.ver[self.kibana_version].values()[0]
         self.verbose = verbose
+        self.debug = debug
         self.whois = WhoisLookup()
         self.info = '{info}[INFO]{endc}'.format(info=bcolors.OKBLUE, endc=bcolors.ENDC)
         self.success = '{green}[SUCCESS]{endc}'.format(green=bcolors.OKGREEN, endc=bcolors.ENDC)
@@ -136,6 +140,11 @@ class elasticBeacon(object):
     def vprint(self, msg):
         if self.verbose:
             print(msg)
+
+    def dprint(self, msg):
+        if self.debug:
+            print("[DEBUG] " + str(msg))
+
 
     def hour_query(self, h, *fields):
         """
@@ -227,16 +236,21 @@ class elasticBeacon(object):
 
         query = self.hour_query(self.period, self.beacon_src_ip, self.beacon_dest_ip, self.beacon_destination_port,
                                 self.beacon_timestamp, FLOW_BYTES, self.beacon_flow_id)
+        self.dprint(query)
         resp = helpers.scan(query=query, client=self.es, scroll="90m", index=self.es_index, timeout="10m")
         df = pd.DataFrame([rec['_source'] for rec in resp])
+        if len(df) == 0:
+            raise Exception("Elasticsearch did not retrieve any data. Please ensure your settings are correct inside the config file.")
+
+        self.dprint(df)
         df['dest_port'] = df[self.beacon_destination_port].fillna(0).astype(int)
 
-	if 'flow' in df.columns:
-	        df[self.beacon_flow_bytes_toserver] = df['flow'].apply(lambda x: x.get(self.beacon_flow_bytes_toserver))
+        if 'flow' in df.columns:
+            df[self.beacon_flow_bytes_toserver] = df['flow'].apply(lambda x: x.get(self.beacon_flow_bytes_toserver))
 
-        df['triad_id'] = (df[self.beacon_src_ip] + df[self.beacon_dest_ip] + df[self.beacon_destination_port].astype(str)).apply(hash)
-        df['triad_freq'] = df.groupby('triad_id')['triad_id'].transform('count').fillna(0).astype(int)
-        self.high_freq = df[df.triad_freq > self.MIN_OCCURANCES].groupby('triad_id').groups.keys()
+            df['triad_id'] = (df[self.beacon_src_ip] + df[self.beacon_dest_ip] + df[self.beacon_destination_port].astype(str)).apply(hash)
+            df['triad_freq'] = df.groupby('triad_id')['triad_id'].transform('count').fillna(0).astype(int)
+            self.high_freq = df[df.triad_freq > self.MIN_OCCURANCES].groupby('triad_id').groups.keys()
         return df
 
     def find_beacon(self, q_job, beacon_list):
@@ -291,6 +305,7 @@ class elasticBeacon(object):
         beacon_df.interval = beacon_df.interval.astype(int)
         beacon_df['dest_degree'] = beacon_df.groupby(self.beacon_dest_ip)[self.beacon_dest_ip].transform('count').fillna(0).astype(int)
         self.vprint('{info} Calculating destination degree.'.format(info=self.info))
+
         if whois:
             self.vprint('{info} Enriching IP addresses with whois information'.format(info=self.info))
             beacon_df['src_whois'] = beacon_df[self.beacon_src_ip].apply(lambda ip: self.whois.get_name_by_ip(ip))
@@ -306,10 +321,9 @@ class elasticBeacon(object):
         if group:
             self.vprint('{info} Grouping by destination group IP'.format(info=self.info))
 
-	    if whois:
-	            self.fields.insert(self.fields.index(self.beacon_dest_ip), 'dest_whois')
-            beacon_df = pd.DataFrame(beacon_df.groupby(
-                self.fields).size())
+        if whois:
+            self.fields.insert(self.fields.index(self.beacon_dest_ip), 'dest_whois')
+            beacon_df = pd.DataFrame(beacon_df.groupby(self.fields).size())
             beacon_df.drop(0, axis=1, inplace=True)
 
         if csv_out:
