@@ -36,6 +36,8 @@ Beaconing
 ---------
 Designed for elasticsearch and Suricata, elasticBeacon will connect to your elasticsearch server, retrieve all IP addresses and identify periodic activity.
 
+You may need to forward port 9200 to your localhost with **ssh -NfL 9200:localhost:9200 user@x.x.x.x**
+
 ```python
 from flare.analytics.command_control import elasticBeacon
 
@@ -50,7 +52,8 @@ flare_beacon --whois --focus_outbound -mo=100 --csv_out=beacon_results.csv
 
 or
 
-flare_beacon --group --whois --focus_outbound -mo=100 --html_out=beacon_results.html
+flare_beacon --group --whois --focus_outbound -c configs/elasticsearch.ini -html beacons.html
+
 ```
 
 
