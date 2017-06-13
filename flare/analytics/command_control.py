@@ -200,19 +200,13 @@ class elasticBeacon(object):
 
     def percent_grouping(self, d):
         mx = 0
-        mx_key = 0
-        total = 0
         interval = 0
-
-        for key in d.keys():
-            total += d[key]
-
-            if d[key] > mx:
-                mx = d[key]
-                mx_key = key
+        # Finding the total numnber of events
+        total = sum(d.values())
+        # Finding the key with the largest value (interval with most events)
+        mx_key = int(max(d.iterkeys(), key=(lambda key: d[key])))
 
         mx_percent = 0.0
-        mx_key = int(mx_key)
 
         for i in range(mx_key - self.WINDOW, mx_key + 1):
             current = 0
@@ -265,7 +259,7 @@ class elasticBeacon(object):
             self.l_df.release()
             work[self.beacon_timestamp] = pd.to_datetime(work[self.beacon_timestamp])
             work[self.beacon_timestamp] = (work[self.beacon_timestamp].astype(int) / 1000000000).astype(int)
-            work = work.sort([self.beacon_timestamp])
+            work = work.sort_values([self.beacon_timestamp])
             
             work['delta'] = (work[self.beacon_timestamp] - work[self.beacon_timestamp].shift()).fillna(0)
             work = work[1:]
@@ -275,7 +269,11 @@ class elasticBeacon(object):
                 if key < self.min_interval:
                     del d[key]
             
-            window, percent = self.percent_grouping(d)
+            if d:
+                window, percent = self.percent_grouping(d)
+            else:
+                window = 0
+                percent = 0
 
             if percent > self.MIN_PERCENT:
                 PERCENT = str(int(percent))
