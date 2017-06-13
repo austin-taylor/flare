@@ -124,7 +124,7 @@ class elasticBeacon(object):
         self.whois = WhoisLookup()
         self.info = '{info}[INFO]{endc}'.format(info=bcolors.OKBLUE, endc=bcolors.ENDC)
         self.success = '{green}[SUCCESS]{endc}'.format(green=bcolors.OKGREEN, endc=bcolors.ENDC)
-        self.fields = [self.beacon_src_ip, self.beacon_dest_ip, self.beacon_destination_port, 'bytes_toserver','dest_degree', 'percent', 'interval']
+        self.fields = [self.beacon_src_ip, self.beacon_dest_ip, self.beacon_destination_port, 'bytes_toserver','dest_degree', 'occurances', 'percent', 'interval']
 
         try:
             self.es = Elasticsearch(self.es_host, port=self.es_port, timeout=self.es_timeout)
@@ -221,7 +221,7 @@ class elasticBeacon(object):
                 mx_percent = percent
                 interval = curr_interval
 
-        return interval, mx_percent
+        return interval, mx_percent, total
 
     def run_query(self):
         self.vprint("{info} Gathering flow data... this may take a while...".format(info=self.info))
@@ -270,10 +270,11 @@ class elasticBeacon(object):
                     del d[key]
             
             if d:
-                window, percent = self.percent_grouping(d)
+                window, percent, total = self.percent_grouping(d)
             else:
                 window = 0
                 percent = 0
+                total = 0
 
             if percent > self.MIN_PERCENT:
                 PERCENT = str(int(percent))
@@ -283,8 +284,9 @@ class elasticBeacon(object):
                 DEST_PORT = str(int(work[self.beacon_destination_port].unique()[0]))
                 BYTES_TOSERVER = work[self.beacon_flow_bytes_toserver].unique()[0]
                 SRC_DEGREE = len(work[self.beacon_dest_ip].unique())
+                OCCURANCES = total
                 self.l_list.acquire()
-                beacon_list.append([SRC_IP, DEST_IP, DEST_PORT, BYTES_TOSERVER, SRC_DEGREE, PERCENT, WINDOW])
+                beacon_list.append([SRC_IP, DEST_IP, DEST_PORT, BYTES_TOSERVER, SRC_DEGREE, OCCURANCES, PERCENT, WINDOW])
                 self.l_list.release()
             q_job.task_done()
 
