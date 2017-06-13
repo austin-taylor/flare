@@ -46,6 +46,7 @@ class elasticBeacon(object):
                  window=2,
                  threads=8,
                  period=24,
+                 min_interval=2,
                  es_host='localhost',
                  es_port=9200,
                  es_timeout=480,
@@ -63,6 +64,7 @@ class elasticBeacon(object):
          so the first window to match is the interval
         :param threads: Number of cores to use
         :param period: Number of hours to locate beacons for
+        :param min_interval: Minimum interval betweeen events to consider for beaconing behavior
         :param es_host: IP Address of elasticsearch host (default is localhost)
         :param es_timeout: Sets timeout to 480 seconds
         :param kibana_version: 4 or 5 (query will depend on version)
@@ -79,6 +81,7 @@ class elasticBeacon(object):
                 self.WINDOW = int(self.config.get('beacon','window'))
                 self.NUM_PROCESSES = int(self.config.get('beacon','threads'))
                 self.period = int(self.config.get('beacon','period'))
+                self.min_interval = int(self.config.get('beacon', 'min_interval'))
                 self.es_timeout = int(self.config.get('beacon','es_timeout'))
                 self.kibana_version = self.config.get('beacon','kibana_version')
                 self.beacon_src_ip = self.config.get('beacon','field_source_ip')
@@ -102,6 +105,7 @@ class elasticBeacon(object):
             self.WINDOW = window
             self.NUM_PROCESSES = threads
             self.period = period
+            self.min_interval = min_interval
             self.kibana_version = kibana_version
             self.es_timeout = es_timeout
             self.beacon_src_ip = 'src_ip'
@@ -207,23 +211,21 @@ class elasticBeacon(object):
                 mx = d[key]
                 mx_key = key
 
-        # if our high count interval is less than 10 we don't evaluate
-        if mx_key < 10:
-            return 0, 0.0
-        else:
-            mx_percent = 0.0
-            for i in range(mx_key - self.WINDOW, mx_key + 1):
-                current = 0
-                # Finding center of current window
-                curr_interval = i + int(self.WINDOW / 2)
-                for j in range(i, i + self.WINDOW):
-                    if d.has_key(j):
-                        current += d[j]
-                percent = float(current) / total * 100
+        mx_percent = 0.0
+        mx_key = int(mx_key)
 
-                if percent > mx_percent:
-                    mx_percent = percent
-                    interval = curr_interval
+        for i in range(mx_key - self.WINDOW, mx_key + 1):
+            current = 0
+            # Finding center of current window
+            curr_interval = i + int(self.WINDOW / 2)
+            for j in range(i, i + self.WINDOW):
+                if d.has_key(j):
+                    current += d[j]
+            percent = float(current) / total * 100
+
+            if percent > mx_percent:
+                mx_percent = percent
+                interval = curr_interval
 
         return interval, mx_percent
 
@@ -261,11 +263,18 @@ class elasticBeacon(object):
 
             work = self.flow_data[self.flow_data.triad_id == triad_id]
             self.l_df.release()
-            work['delta'] = (pd.to_datetime(work[self.beacon_timestamp]).astype(int) / 1000000000 -
-                             pd.to_datetime(work[self.beacon_timestamp]).shift().astype(int) / 1000000000).astype(int)
+            work[self.beacon_timestamp] = pd.to_datetime(work[self.beacon_timestamp])
+            work[self.beacon_timestamp] = (work[self.beacon_timestamp].astype(int) / 1000000000).astype(int)
+            work = work.sort([self.beacon_timestamp])
+            
+            work['delta'] = (work[self.beacon_timestamp] - work[self.beacon_timestamp].shift()).fillna(0)
+            work = work[1:]
 
             d = dict(work.delta.value_counts())
-
+            for key in d.keys():
+                if key < self.min_interval:
+                    del d[key]
+            
             window, percent = self.percent_grouping(d)
 
             if percent > self.MIN_PERCENT:
