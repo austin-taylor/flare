@@ -1,4 +1,3 @@
-# this is a test
 # coding: utf-8
 import sys
 from flare.tools.utils import bcolors
