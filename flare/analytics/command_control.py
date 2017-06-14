@@ -1,3 +1,4 @@
+# this is a test
 # coding: utf-8
 import sys
 from flare.tools.utils import bcolors
@@ -198,11 +199,9 @@ class elasticBeacon(object):
 
         return query
 
-    def percent_grouping(self, d):
+    def percent_grouping(self, d, total):
         mx = 0
         interval = 0
-        # Finding the total numnber of events
-        total = sum(d.values())
         # Finding the key with the largest value (interval with most events)
         mx_key = int(max(d.iterkeys(), key=(lambda key: d[key])))
 
@@ -221,7 +220,7 @@ class elasticBeacon(object):
                 mx_percent = percent
                 interval = curr_interval
 
-        return interval, mx_percent, total
+        return interval, mx_percent
 
     def run_query(self):
         self.vprint("{info} Gathering flow data... this may take a while...".format(info=self.info))
@@ -254,13 +253,12 @@ class elasticBeacon(object):
         while not q_job.empty():
             triad_id = q_job.get()
             self.l_df.acquire()
-
             work = self.flow_data[self.flow_data.triad_id == triad_id]
             self.l_df.release()
+            
             work[self.beacon_timestamp] = pd.to_datetime(work[self.beacon_timestamp])
             work[self.beacon_timestamp] = (work[self.beacon_timestamp].astype(int) / 1000000000).astype(int)
             work = work.sort_values([self.beacon_timestamp])
-            
             work['delta'] = (work[self.beacon_timestamp] - work[self.beacon_timestamp].shift()).fillna(0)
             work = work[1:]
 
@@ -269,25 +267,24 @@ class elasticBeacon(object):
                 if key < self.min_interval:
                     del d[key]
             
-            if d:
-                window, percent, total = self.percent_grouping(d)
-            else:
-                window = 0
-                percent = 0
-                total = 0
-
-            if percent > self.MIN_PERCENT:
-                PERCENT = str(int(percent))
-                WINDOW = str(window)
-                SRC_IP = work[self.beacon_src_ip].unique()[0]
-                DEST_IP = work[self.beacon_dest_ip].unique()[0]
-                DEST_PORT = str(int(work[self.beacon_destination_port].unique()[0]))
-                BYTES_TOSERVER = work[self.beacon_flow_bytes_toserver].unique()[0]
-                SRC_DEGREE = len(work[self.beacon_dest_ip].unique())
-                OCCURANCES = total
-                self.l_list.acquire()
-                beacon_list.append([SRC_IP, DEST_IP, DEST_PORT, BYTES_TOSERVER, SRC_DEGREE, OCCURANCES, PERCENT, WINDOW])
-                self.l_list.release()
+            # Finding the total numnber of events
+            total = sum(d.values())
+            
+            if d and total > self.MIN_OCCURANCES:
+                window, percent = self.percent_grouping(d, total)
+                if percent > self.MIN_PERCENT and total > self.MIN_OCCURANCES:
+                    PERCENT = str(int(percent))
+                    WINDOW = str(window)
+                    SRC_IP = work[self.beacon_src_ip].unique()[0]
+                    DEST_IP = work[self.beacon_dest_ip].unique()[0]
+                    DEST_PORT = str(int(work[self.beacon_destination_port].unique()[0]))
+                    BYTES_TOSERVER = work[self.beacon_flow_bytes_toserver].unique()[0]
+                    SRC_DEGREE = len(work[self.beacon_dest_ip].unique())
+                    OCCURANCES = total
+                    self.l_list.acquire()
+                    beacon_list.append([SRC_IP, DEST_IP, DEST_PORT, BYTES_TOSERVER, SRC_DEGREE, OCCURANCES, PERCENT, WINDOW])
+                    self.l_list.release()
+            
             q_job.task_done()
 
     def find_beacons(self, group=True, focus_outbound=False, whois=True, csv_out=None, html_out=None):
