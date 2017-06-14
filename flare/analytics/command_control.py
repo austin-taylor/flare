@@ -76,7 +76,7 @@ class elasticBeacon(object):
                 self.es_host = self.config.get('beacon', 'es_host')
                 self.es_port = int(self.config.get('beacon', 'es_port'))
                 self.es_index = self.config.get('beacon', 'es_index')
-                self.MIN_OCCURANCES = int(self.config.get('beacon','min_occur'))
+                self.MIN_OCCURRENCES = int(self.config.get('beacon','min_occur'))
                 self.MIN_PERCENT = int(self.config.get('beacon','min_percent'))
                 self.WINDOW = int(self.config.get('beacon','window'))
                 self.NUM_PROCESSES = int(self.config.get('beacon','threads'))
@@ -100,7 +100,7 @@ class elasticBeacon(object):
             self.es_host = es_host
             self.es_port = es_port
             self.es_index = es_index
-            self.MIN_OCCURANCES = min_occur
+            self.MIN_OCCURRENCES = min_occur
             self.MIN_PERCENT = min_percent
             self.WINDOW = window
             self.NUM_PROCESSES = threads
@@ -124,7 +124,7 @@ class elasticBeacon(object):
         self.whois = WhoisLookup()
         self.info = '{info}[INFO]{endc}'.format(info=bcolors.OKBLUE, endc=bcolors.ENDC)
         self.success = '{green}[SUCCESS]{endc}'.format(green=bcolors.OKGREEN, endc=bcolors.ENDC)
-        self.fields = [self.beacon_src_ip, self.beacon_dest_ip, self.beacon_destination_port, 'bytes_toserver','dest_degree', 'occurances', 'percent', 'interval']
+        self.fields = [self.beacon_src_ip, self.beacon_dest_ip, self.beacon_destination_port, 'bytes_toserver','dest_degree', 'occurrences', 'percent', 'interval']
 
         try:
             self.es = Elasticsearch(self.es_host, port=self.es_port, timeout=self.es_timeout)
@@ -244,7 +244,7 @@ class elasticBeacon(object):
 
             df['triad_id'] = (df[self.beacon_src_ip] + df[self.beacon_dest_ip] + df[self.beacon_destination_port].astype(str)).apply(hash)
             df['triad_freq'] = df.groupby('triad_id')['triad_id'].transform('count').fillna(0).astype(int)
-            self.high_freq = df[df.triad_freq > self.MIN_OCCURANCES].groupby('triad_id').groups.keys()
+            self.high_freq = df[df.triad_freq > self.MIN_OCCURRENCES].groupby('triad_id').groups.keys()
         return df
 
     def find_beacon(self, q_job, beacon_list):
@@ -269,9 +269,9 @@ class elasticBeacon(object):
             # Finding the total numnber of events
             total = sum(d.values())
             
-            if d and total > self.MIN_OCCURANCES:
+            if d and total > self.MIN_OCCURRENCES:
                 window, percent = self.percent_grouping(d, total)
-                if percent > self.MIN_PERCENT and total > self.MIN_OCCURANCES:
+                if percent > self.MIN_PERCENT and total > self.MIN_OCCURRENCES:
                     PERCENT = str(int(percent))
                     WINDOW = str(window)
                     SRC_IP = work[self.beacon_src_ip].unique()[0]
@@ -279,9 +279,9 @@ class elasticBeacon(object):
                     DEST_PORT = str(int(work[self.beacon_destination_port].unique()[0]))
                     BYTES_TOSERVER = work[self.beacon_flow_bytes_toserver].unique()[0]
                     SRC_DEGREE = len(work[self.beacon_dest_ip].unique())
-                    OCCURANCES = total
+                    OCCURRENCES = total
                     self.l_list.acquire()
-                    beacon_list.append([SRC_IP, DEST_IP, DEST_PORT, BYTES_TOSERVER, SRC_DEGREE, OCCURANCES, PERCENT, WINDOW])
+                    beacon_list.append([SRC_IP, DEST_IP, DEST_PORT, BYTES_TOSERVER, SRC_DEGREE, OCCURRENCES, PERCENT, WINDOW])
                     self.l_list.release()
             
             q_job.task_done()
