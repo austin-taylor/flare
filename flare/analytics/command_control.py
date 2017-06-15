@@ -128,7 +128,7 @@ class elasticBeacon(object):
 
         try:
             self.es = Elasticsearch(self.es_host, port=self.es_port, timeout=self.es_timeout)
-            self.vprint('{green}[SUCCESS]{endc} Connected to elasticsearch on {host}:{port}'.format(green=bcolors.OKGREEN, endc=bcolors.ENDC, host=es_host, port=str(es_port)))
+            self.vprint('{green}[SUCCESS]{endc} Connected to elasticsearch on {host}:{port}'.format(green=bcolors.OKGREEN, endc=bcolors.ENDC, host=self.es_host, port=str(self.es_port)))
         except Exception as e:
             self.vprint(e)
             raise Exception(
