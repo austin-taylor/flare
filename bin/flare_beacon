@@ -42,8 +42,6 @@ def main():
     args = parser.parse_args()
 
     try:
-        if args.verbose:
-            print('{info}[INFO]{endc} Attempting to connect to elasticsearch...'.format(info=bcolors.OKBLUE, endc=bcolors.ENDC))
 
         eb = elasticBeacon(config_in=args.config,
                            es_host=args.eshost,
