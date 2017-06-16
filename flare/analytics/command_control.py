@@ -90,7 +90,8 @@ class elasticBeacon(object):
                 self.beacon_timestamp = self.config.get('beacon', 'field_timestamp')
                 self.beacon_flow_bytes_toserver = self.config.get('beacon', 'field_flow_bytes_toserver')
                 self.beacon_flow_id = self.config.get('beacon', 'field_flow_id')
-                self.suricata_defaults = self.config.get('beacon','suricata_defaults')
+                self.verbose = self.config.config.getboolean('beacon', 'verbose')
+                self.suricata_defaults = self.config.config.getboolean('beacon','suricata_defaults')
 
             except Exception as e:
                 print('{red}[FAIL]{endc} Could not properly load your config!\nReason: {e}'.format(red=bcolors.FAIL, endc=bcolors.ENDC, e=e))
@@ -114,12 +115,12 @@ class elasticBeacon(object):
             self.beacon_timestamp = '@timestamp'
             self.beacon_flow_bytes_toserver = 'bytes_toserver'
             self.beacon_flow_id = 'flow_id'
+            self.verbose = verbose
             self.suricata_defaults = False
 
         self.ver = {'4': {'filtered': 'query'}, '5': {'bool': 'must'}}
         self.filt = self.ver[self.kibana_version].keys()[0]
         self.query = self.ver[self.kibana_version].values()[0]
-        self.verbose = verbose
         self.debug = debug
         self.whois = WhoisLookup()
         self.info = '{info}[INFO]{endc}'.format(info=bcolors.OKBLUE, endc=bcolors.ENDC)
