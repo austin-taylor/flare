@@ -128,6 +128,8 @@ class elasticBeacon(object):
         self.fields = [self.beacon_src_ip, self.beacon_dest_ip, self.beacon_destination_port, 'bytes_toserver','dest_degree', 'occurrences', 'percent', 'interval']
 
         try:
+            self.vprint('{info}[INFO]{endc} Attempting to connect to elasticsearch...'.format(info=bcolors.OKBLUE,
+                                                                                        endc=bcolors.ENDC))
             self.es = Elasticsearch(self.es_host, port=self.es_port, timeout=self.es_timeout)
             self.vprint('{green}[SUCCESS]{endc} Connected to elasticsearch on {host}:{port}'.format(green=bcolors.OKGREEN, endc=bcolors.ENDC, host=self.es_host, port=str(self.es_port)))
         except Exception as e:

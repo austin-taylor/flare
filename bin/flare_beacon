@@ -38,12 +38,10 @@ def main():
     parser.add_argument('-fo', '--focus_outbound', dest='focus_outbound', action='store_true', default=False, help='Removes private & multicast IPs')
     parser.add_argument('-csv', '--csv_out', dest='csv_out',  default=None, help='Name of CSV to be written')
     parser.add_argument('-html', '--html_out', dest='html_out', default=None, help='Name of HTML File to be written (works best with group)')
-    parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', default=False, help='Prints status out to screen (defaults to True)')
+    parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', default=True, help='Prints status out to screen (defaults to True)')
     args = parser.parse_args()
 
     try:
-        if args.verbose:
-            print('{info}[INFO]{endc} Attempting to connect to elasticsearch...'.format(info=bcolors.OKBLUE, endc=bcolors.ENDC))
 
         eb = elasticBeacon(config_in=args.config,
                            es_host=args.eshost,
