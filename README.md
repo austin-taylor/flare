@@ -12,7 +12,6 @@ Currently supports python 2.7
 
 ```python
 sudo pip install -r requirements.txt
-
 python setup.py install
 ```
 
@@ -110,3 +109,5 @@ True
 ds_f.ip_matcher('39.993.9.1')
 False
 ```
+
+and many more features for data extraction...
