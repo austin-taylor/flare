@@ -168,34 +168,67 @@ class elasticBeacon(object):
         lte = NOW
         gte = int(NOW - h * HOURS)
 
-        query = {
-            "query": {
-                self.filt: {
-                    self.query: {
-                        "query_string": {
-                            "query": "*",
-                            "analyze_wildcard": 'true'
-                        }
-                    },
-                    "filter": {
-                        "bool": {
-                            "must": [
-                                {
-                                    "range": {
-                                        "timestamp": {
-                                            "gte": gte,
-                                            "lte": lte,
-                                            "format": "epoch_millis"
+
+        if self.es_index=='logstash-*':
+            query = {
+                "query": {
+                    self.filt: {
+                        self.query: {
+                            "query_string": {
+                                "query": "*",
+                                "analyze_wildcard": 'true'
+                            }
+                        },
+                        "filter": [{
+                            "bool": {
+                                "must": [
+                                    {
+                                        "range": {
+                                            "timestamp": {
+                                                "gte": gte,
+                                                "lte": lte,
+                                                "format": "epoch_millis"
+                                            }
                                         }
                                     }
-                                }
-                            ],
-                            "must_not": []
+                                ],
+                                "must_not": []
+                            }
+                        },
+                            {"term": {"event_type": "flow"}}
+                        ]
+                    }
+                }
+            }
+        else:
+            query = {
+                "query": {
+                    self.filt: {
+                        self.query: {
+                            "query_string": {
+                                "query": "*",
+                                "analyze_wildcard": 'true'
+                            }
+                        },
+                        "filter": {
+                            "bool": {
+                                "must": [
+                                    {
+                                        "range": {
+                                            "timestamp": {
+                                                "gte": gte,
+                                                "lte": lte,
+                                                "format": "epoch_millis"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "must_not": []
+                            }
                         }
                     }
                 }
             }
-        }
         if fields:
             query["_source"] = list(fields)
 
