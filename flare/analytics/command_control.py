@@ -177,7 +177,7 @@ class elasticBeacon(object):
                             "analyze_wildcard": 'true'
                         }
                     },
-                    "filter": {
+                    "filter": [ {
                         "bool": {
                             "must": [
                                 {
@@ -192,7 +192,9 @@ class elasticBeacon(object):
                             ],
                             "must_not": []
                         }
-                    }
+                    },
+                        { "term": { "event_type": "flow" } }
+                    ]
                 }
             }
         }
