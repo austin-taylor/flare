@@ -1,11 +1,7 @@
 # -*- coding: utf-8 -*-
 import pyasn
 import json
-<<<<<<< HEAD
-import cPickle
-=======
 import cPickle as pickle
->>>>>>> 554a5d233881c7cd2b222df90f5578d51845de14
 import os
 import argparse
 import datetime
