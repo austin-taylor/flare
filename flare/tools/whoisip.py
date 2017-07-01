@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import pyasn
 import json
-import sys
 import cPickle
 import os
 import argparse
@@ -9,7 +8,7 @@ import datetime
 
 from urllib2 import urlopen
 from HTMLParser import HTMLParser
-from htmlentitydefs import name2codepoint
+
 
 LOCAL_DIR = os.path.dirname(os.path.realpath(__file__))
 

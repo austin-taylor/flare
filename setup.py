@@ -31,6 +31,10 @@ setup(
     data_files=[('flare/data/whoisip/', [
         'flare/data/whoisip/asn_names_20160930.pkl',
         'flare/data/whoisip/ipasn_20160916.1200.dat']),
+        ('flare/data/majestic', [
+            'flare/data/majestic/majestic_million.pkl']),
+        ('flare/data/tld', [
+            'flare/data/majestic/tld_list.pkl']),
         ('flare/data/alexa', [
             'flare/data/alexa/subdomains-top1mil.txt',
             'flare/data/alexa/top-1m.csv']),
@@ -38,3 +42,4 @@ setup(
             'flare/data/misc/dga_domains.txt',
             'flare/data/misc/words.txt'])]
 )
+

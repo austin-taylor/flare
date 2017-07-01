@@ -13,7 +13,7 @@ import logging
 try:
     import sklearn.ensemble
     import sklearn.feature_extraction
-    from sklearn.cross_validation import train_test_split
+    from sklearn.model_selection import train_test_split
 except:
     logging.error("""[-] Could not import sklearn! Some functions may not operate properly. 
         Please visit http://scikit-learn.org/stable/install.html for more information on scikit-learn""")
@@ -129,6 +129,8 @@ def last_char_check(word):
         return word.strip()[-1].isalnum()
     except:
         return np.nan
+
+#Real time DGA list: http://osint.bambenekconsulting.com/feeds/dga-feed.txt
 
 
 class dga_classifier(object):
