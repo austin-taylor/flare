@@ -1,15 +1,12 @@
 # -*- coding: utf-8 -*-
 import pyasn
 import json
-import sys
-import cPickle
+import cPickle as pickle
 import os
 import argparse
 import datetime
-
 from urllib2 import urlopen
 from HTMLParser import HTMLParser
-from htmlentitydefs import name2codepoint
 
 LOCAL_DIR = os.path.dirname(os.path.realpath(__file__))
 
@@ -31,7 +28,7 @@ class WhoisLookup:
             pkl_path = os.path.join(
                 LOCAL_DIR, '..', 'data', 'whoisip', 'asn_names_20160930.pkl')
             with open(pkl_path, 'rb') as f:
-                self.names = cPickle.load(f)
+                self.names = pickle.load(f)
 
     def get_asn(self, ip):
         asn, netmask = self.asndb.lookup(ip)
@@ -136,4 +133,4 @@ if __name__ == '__main__':
         file_name = 'asn_names_%s.pkl' % now.strftime('%Y%m%d')
         print 'Saving %d entries to %s' % (len(asn_map.keys()), file_name)
         with open(file_name, 'wb') as f:
-            cPickle.dump(asn_map, f)
+            pickle.dump(asn_map, f)
