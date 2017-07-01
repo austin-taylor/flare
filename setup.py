@@ -38,6 +38,8 @@ setup(
         ('flare/data/alexa', [
             'flare/data/alexa/subdomains-top1mil.txt',
             'flare/data/alexa/top-1m.csv']),
+        ('flare/data/tld', [
+            'flare/data/tld/tld_list.pkl']),
         ('flare/data/misc', [
             'flare/data/misc/dga_domains.txt',
             'flare/data/misc/words.txt'])]

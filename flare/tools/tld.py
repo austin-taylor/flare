@@ -10,6 +10,7 @@ LOCAL_DIR = os.path.dirname(os.path.realpath(__file__))
 
 
 class TLDCheck(object):
+
     """
     Parses out TLD from domains and checks it against IANA.
     """
