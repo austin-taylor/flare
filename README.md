@@ -63,7 +63,7 @@ Domain Features
 Alexa
 -----
 ```python
-from flare.utils.alexa import Alexa
+from flare.tools.alexa import Alexa
 alexa = Alexa(limit=1000000)
 
 print alexa.domain_in_alexa('google.com') # Returns True
@@ -84,9 +84,9 @@ flare.tools.iputils
 Data Science Features
 ---------------------
 ```python
-from flare.utils.alexa import dga_classification
+from flare.data_science.features import dga_classifier
 
-dga_c = dga_classification()
+dga_c = dga_classifier()
 
 print dga_c.predict('facebook')
 Legit
@@ -97,17 +97,37 @@ dga
 
 
 ```python
-from flare.utils.alexa import data_features
-ds_f = data_features()
+from flare.data_science.features import entropy
+from flare.data_science.features import ip_matcher
+from flare.data_science.features import domain_extract
+from flare.data_science.features import levenshtein
+from flare.data_science.features import domain_tld_extract
 
-print ds_f.entropy('akd93ka8a91a')
+# Entropy example
+print entropy('akd93ka8a91a')
 2.58496250072
 
-ds_f.ip_matcher('8.8.8.8')
+# IP Matcher Example
+print ip_matcher('8.8.8.8')
 True
 
-ds_f.ip_matcher('39.993.9.1')
+print ip_matcher('39.993.9.1')
 False
+
+# Domain Extract Example
+domain_extract('longsubdomain.huntoperator.com')
+'huntoperator'
+
+# Domain TLD Extract
+domain_tld_extract('longsubdomain.huntoperator.com')
+'huntoperator.com'
+
+# Levenshtein example
+a = ['google.com']
+b = ['googl3.com']
+print levenshtein(a, b)
+'Difference of:' 1
+
 ```
 
 and many more features for data extraction...
