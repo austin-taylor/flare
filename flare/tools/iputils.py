@@ -1,7 +1,12 @@
 import struct
 import binascii
 import socket
-import ipaddr
+import sys
+
+if (sys.version_info > (3, 0)):
+    from ipaddress import ip_address as ip_addr
+else:
+    from ipaddr import IPAddress as ip_addr
 
 def hex_to_ip(convert):
     final_ip = None
@@ -23,10 +28,10 @@ def ip_to_hex(ip_to_convert):
     return binascii.hexlify(socket.inet_aton(ip_to_convert)).decode(encoding='UTF-8')
 
 def private_check(ip):
-    return ipaddr.IPAddress(ip).is_private
+    return ip_addr(ip).is_private
 
 def multicast_check(ip):
-    return ipaddr.IPAddress(ip).is_multicast
+    return ip_addr(ip).is_multicast
 
 def reserved_check(ip):
-    return ipaddr.IPAddress(ip).is_reserved
+    return ip_addr(ip).is_reserved

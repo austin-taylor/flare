@@ -75,9 +75,9 @@ class MarkovModel(object):
         # update prior
         # prior is set to be two orders of magnitude smaller
         #   than the smallest observed transition probability
-        probabilities = [[v for (k, v) in d.iteritems()]
+        probabilities = [[v for (k, v) in list(d.items())]
                          for d
-                         in self.normed.values()]
+                         in list(self.normed.values())]
         self.prior = .01 * min(
             [val for sublist in probabilities for val in sublist]
         )
@@ -101,7 +101,7 @@ class MarkovModel(object):
             )
 
         # begin with a random seed
-        seed = random.choice(self.histories.keys())
+        seed = random.choice(list(self.histories.keys()))
         result = ""
 
         # append one letter at a time, sampled from the transition matrix
@@ -154,19 +154,19 @@ class MarkovModel(object):
         """
         Normalize the transition counts into a proper transition matrix.
         """
-        output = defaultdict(repeat(defaultdict(float)).next)
-        for (substr, dictionary) in a.items():
+        output = defaultdict(repeat(defaultdict(float)).__next__)
+        for (substr, dictionary) in list(a.items()):
             total = sum(dictionary.values())
 
             output[substr] = {key: dictionary[key] / float(total)
                               for key
-                              in dictionary.keys()}
+                              in list(dictionary.keys())}
         return output
 
     def __sample_letter(self, distribution):
         """ Produce a random draw from a Categorical distribution.  """
         r = random.random()
-        for (key, num) in distribution.iteritems():
+        for (key, num) in list(distribution.items()):
             r -= num
             if r <= 0:
                 return key
@@ -178,4 +178,4 @@ if __name__ == '__main__':
     m.load_from_file(file_path)
     print("Training model. ")
     m.train()
-    print("A simulated sequence: %s" % m.simulate(500))
+    print(("A simulated sequence: %s" % m.simulate(500)))

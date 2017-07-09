@@ -34,7 +34,7 @@ setup(
         ('flare/data/majestic', [
             'flare/data/majestic/majestic_million.pkl']),
         ('flare/data/tld', [
-            'flare/data/majestic/tld_list.pkl']),
+            'flare/data/tld/tld_list.pkl']),
         ('flare/data/alexa', [
             'flare/data/alexa/subdomains-top1mil.txt',
             'flare/data/alexa/top-1m.csv']),

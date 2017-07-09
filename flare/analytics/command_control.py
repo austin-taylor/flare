@@ -94,7 +94,7 @@ class elasticBeacon(object):
                 self.suricata_defaults = self.config.config.getboolean('beacon','suricata_defaults')
 
             except Exception as e:
-                print('{red}[FAIL]{endc} Could not properly load your config!\nReason: {e}'.format(red=bcolors.FAIL, endc=bcolors.ENDC, e=e))
+                print(('{red}[FAIL]{endc} Could not properly load your config!\nReason: {e}'.format(red=bcolors.FAIL, endc=bcolors.ENDC, e=e)))
                 sys.exit(0)
 
         else:
@@ -119,8 +119,8 @@ class elasticBeacon(object):
             self.suricata_defaults = False
 
         self.ver = {'4': {'filtered': 'query'}, '5': {'bool': 'must'}}
-        self.filt = self.ver[self.kibana_version].keys()[0]
-        self.query = self.ver[self.kibana_version].values()[0]
+        self.filt = list(self.ver[self.kibana_version].keys())[0]
+        self.query = list(self.ver[self.kibana_version].values())[0]
         self.debug = debug
         self.whois = WhoisLookup()
         self.info = '{info}[INFO]{endc}'.format(info=bcolors.OKBLUE, endc=bcolors.ENDC)
@@ -150,7 +150,7 @@ class elasticBeacon(object):
 
     def dprint(self, msg):
         if self.debug:
-            print("[DEBUG] " + str(msg))
+            print(("[DEBUG] " + str(msg)))
 
 
     def hour_query(self, h, *fields):
@@ -238,7 +238,7 @@ class elasticBeacon(object):
         mx = 0
         interval = 0
         # Finding the key with the largest value (interval with most events)
-        mx_key = int(max(d.iterkeys(), key=(lambda key: d[key])))
+        mx_key = int(max(iter(list(d.keys())), key=(lambda key: d[key])))
 
         mx_percent = 0.0
 
@@ -247,7 +247,7 @@ class elasticBeacon(object):
             # Finding center of current window
             curr_interval = i + int(self.WINDOW / 2)
             for j in range(i, i + self.WINDOW):
-                if d.has_key(j):
+                if j in d:
                     current += d[j]
             percent = float(current) / total * 100
 
@@ -280,7 +280,7 @@ class elasticBeacon(object):
 
             df['triad_id'] = (df[self.beacon_src_ip] + df[self.beacon_dest_ip] + df[self.beacon_destination_port].astype(str)).apply(hash)
             df['triad_freq'] = df.groupby('triad_id')['triad_id'].transform('count').fillna(0).astype(int)
-            self.high_freq = df[df.triad_freq > self.MIN_OCCURRENCES].groupby('triad_id').groups.keys()
+            self.high_freq = list(df[df.triad_freq > self.MIN_OCCURRENCES].groupby('triad_id').groups.keys())
         return df
 
     def find_beacon(self, q_job, beacon_list):
@@ -298,7 +298,7 @@ class elasticBeacon(object):
             work = work[1:]
 
             d = dict(work.delta.value_counts())
-            for key in d.keys():
+            for key in list(d.keys()):
                 if key < self.min_interval:
                     del d[key]
             

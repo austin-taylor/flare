@@ -1,12 +1,19 @@
 # -*- coding: utf-8 -*-
 import pyasn
+import sys
 import json
-import cPickle as pickle
 import os
 import argparse
 import datetime
-from urllib2 import urlopen
-from HTMLParser import HTMLParser
+
+if (sys.version_info > (3, 0)):
+    from urllib.request import urlopen
+    from html.parser import HTMLParser
+    import pickle as pickle
+else:
+    from urllib2 import urlopen
+    import cPickle as pickle
+    from HTMLParser import HTMLParser
 
 
 LOCAL_DIR = os.path.dirname(os.path.realpath(__file__))
@@ -69,12 +76,12 @@ class WhoisLookup:
     def create_new_asn_mapping(verbose=True):
         asnames_url = 'http://thyme.apnic.net/current/data-used-autnums'
         if verbose:
-            print 'Downloading asn names from http://thyme.apnic.net/current/data-used-autnums'
+            print('Downloading asn names from http://thyme.apnic.net/current/data-used-autnums')
         http = urlopen(asnames_url)
         data = http.read()
         http.close()
         if verbose:
-            print 'Parsing asn file'
+            print('Parsing asn file')
         asn_map = {}
         for line in data.split('\n'):
             if len(line) > 0:
@@ -87,12 +94,12 @@ class WhoisLookup:
     def create_new_asn_mapping2(verbose=True):
         asnames_url = 'http://www.cidr-report.org/as2.0/autnums.html'
         if verbose:
-            print 'Downloading asn names from http://www.cidr-report.org/as2.0/autnums.html'
+            print('Downloading asn names from http://www.cidr-report.org/as2.0/autnums.html')
         http = urlopen(asnames_url)
         data = http.read()
         http.close()
         if verbose:
-            print 'Parsing asn file'
+            print('Parsing asn file')
 
         parser = ASNHTMLParser()
         parser.feed(data)
@@ -131,6 +138,6 @@ if __name__ == '__main__':
 
         now = datetime.datetime.now()
         file_name = 'asn_names_%s.pkl' % now.strftime('%Y%m%d')
-        print 'Saving %d entries to %s' % (len(asn_map.keys()), file_name)
+        print(('Saving %d entries to %s' % (len(list(asn_map.keys())), file_name)))
         with open(file_name, 'wb') as f:
             pickle.dump(asn_map, f)
