@@ -27,7 +27,6 @@ warnings.filterwarnings('ignore')
 
 config_default = os.path.join(os.path.dirname(__file__), '..', '..', 'configs/elasticsearch.ini')
 
-
 class elasticBeacon(object):
     """
     Elastic Beacon is  designed to identify periodic communication between
@@ -92,6 +91,7 @@ class elasticBeacon(object):
                 self.beacon_flow_id = self.config.get('beacon', 'field_flow_id')
                 self.verbose = self.config.config.getboolean('beacon', 'verbose')
                 self.suricata_defaults = self.config.config.getboolean('beacon','suricata_defaults')
+
 
             except Exception as e:
                 print(('{red}[FAIL]{endc} Could not properly load your config!\nReason: {e}'.format(red=bcolors.FAIL, endc=bcolors.ENDC, e=e)))

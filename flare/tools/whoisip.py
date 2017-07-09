@@ -9,7 +9,7 @@ import datetime
 if (sys.version_info > (3, 0)):
     from urllib.request import urlopen
     from html.parser import HTMLParser
-    import pickle as pickle
+    import _pickle as pickle
 else:
     from urllib2 import urlopen
     import cPickle as pickle
@@ -29,6 +29,7 @@ class WhoisLookup:
             self.asndb = pyasn.pyasn(os.path.join(
                 LOCAL_DIR, '..', 'data', 'whoisip', 'ipasn_20160916.1200.dat'))
 
+
         if asn_map is not None:
             with open(asn_map, 'rb') as f:
                 self.names = json.loads(f.read())
@@ -36,7 +37,10 @@ class WhoisLookup:
             pkl_path = os.path.join(
                 LOCAL_DIR, '..', 'data', 'whoisip', 'asn_names_20160930.pkl')
             with open(pkl_path, 'rb') as f:
-                self.names = pickle.load(f)
+                if (sys.version_info > (3, 0)):
+                    self.names = pickle.load(f, encoding='bytes')
+                else:
+                    self.names = pickle.load(f)
 
     def get_asn(self, ip):
         asn, netmask = self.asndb.lookup(ip)
