@@ -50,16 +50,19 @@ class WhoisLookup:
         return self.asndb.lookup(ip)
 
     def get_name_by_ip(self, ip):
+        query_msg = "IP Not Found"
         try:
-            asn = self.get_asn(ip)
-            if str(asn) in self.names:
-                return self.names[str(asn)]
-            else:
-                query_msg = "IP not found"
-                return query_msg
+            if (sys.version_info > (3, 0)):
+                asn = str(self.get_asn(ip)).encode()
+                if asn in self.names:
+                    query_msg = self.names[asn].decode()
+            elif (sys.version_info < (3,0)):
+                asn = str(self.get_asn(ip))
+                if asn in self.names:
+                    query_msg = self.names[asn]
+            return query_msg
         except ValueError:
             except_msg = "Invalid input"
-
             return except_msg
 
     def domain_in_ip_whois_match(self, domain, ip):
