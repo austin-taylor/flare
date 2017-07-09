@@ -11,8 +11,9 @@ from flare.tools.alexa import Alexa
 import logging
 
 try:
-    import sklearn.ensemble
-    import sklearn.feature_extraction
+    #import sklearn
+    from sklearn import ensemble
+    from sklearn import feature_extraction
     from sklearn.model_selection import train_test_split
 except:
     logging.error("""[-] Could not import sklearn! Some functions may not operate properly. 
@@ -184,9 +185,9 @@ class dga_classifier(object):
         all_domains['entropy'] = [self.entropy(
             x) for x in all_domains['domain']]
 
-        self.clf = sklearn.ensemble.RandomForestClassifier(n_estimators=20)
+        self.clf = ensemble.RandomForestClassifier(n_estimators=20)
 
-        self.alexa_vc = sklearn.feature_extraction.text.CountVectorizer(
+        self.alexa_vc = feature_extraction.text.CountVectorizer(
             analyzer='char', ngram_range=(3, 5), min_df=1e-4, max_df=1.0)
         counts_matrix = self.alexa_vc.fit_transform(alexa_df['domain'])
         self.alexa_counts = np.log10(counts_matrix.sum(axis=0).getA1())
@@ -199,7 +200,7 @@ class dga_classifier(object):
         word_df = word_df.dropna()
         word_df = word_df.drop_duplicates()
 
-        self.dict_vc = sklearn.feature_extraction.text.CountVectorizer(
+        self.dict_vc = feature_extraction.text.CountVectorizer(
             analyzer='char', ngram_range=(3, 5), min_df=1e-5, max_df=1.0)
         counts_matrix = self.dict_vc.fit_transform(word_df['word'])
         self.dict_counts = np.log10(counts_matrix.sum(axis=0).getA1())

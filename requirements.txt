@@ -1,5 +1,6 @@
 # Modules that have multiple dependencies and have trouble being installed through PIP
 sklearn
+scipy
 
 # Modules available through PyPy
 backport-ipaddress==0.1
