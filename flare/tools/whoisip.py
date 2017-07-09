@@ -2,7 +2,6 @@
 import pyasn
 import sys
 import json
-import pickle as pickle
 import os
 import argparse
 import datetime
@@ -10,8 +9,10 @@ import datetime
 if (sys.version_info > (3, 0)):
     from urllib.request import urlopen
     from html.parser import HTMLParser
+    import pickle as pickle
 else:
     from urllib2 import urlopen
+    import cPickle as pickle
     from HTMLParser import HTMLParser
 
 
