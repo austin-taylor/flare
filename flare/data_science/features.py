@@ -25,7 +25,7 @@ LOCAL_DIR = os.path.dirname(os.path.realpath(__file__))
 
 def entropy(s):
     p, lns = Counter(s), float(len(s))
-    return -sum(count / lns * math.log(count / lns, 2) for count in p.values())
+    return -sum(count / lns * math.log(count / lns, 2) for count in list(p.values()))
 
 
 def levenshtein(source, target):
@@ -232,7 +232,7 @@ class dga_classifier(object):
         # Multiply and transpose vector
         alexa_match = self.alexa_counts * self.alexa_vc.transform([domain]).T
         dict_match = self.dict_counts * self.dict_vc.transform([domain]).T
-        print '%s Alexa match: %d, Dict match: %d' % (domain, alexa_match, dict_match)
+        print(('%s Alexa match: %d, Dict match: %d' % (domain, alexa_match, dict_match)))
         return domain, alexa_match, dict_match
 
     def predict(self, domain):

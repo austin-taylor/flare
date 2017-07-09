@@ -1,7 +1,12 @@
 import os
 import pandas as pd
 import warnings
-import cPickle as pickle
+import sys
+
+if (sys.version_info > (3, 0)):
+    import pickle as pickle
+else:
+    import cPickle as pickle
 import tldextract
 warnings.filterwarnings("ignore", 'This pattern has match groups')
 

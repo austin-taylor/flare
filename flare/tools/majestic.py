@@ -1,5 +1,5 @@
 import pandas as pd
-import cPickle as pickle
+import pickle as pickle
 import os
 
 LOCAL_DIR = os.path.dirname(os.path.realpath(__file__))
