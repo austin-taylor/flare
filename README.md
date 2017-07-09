@@ -8,7 +8,7 @@ Flare is a network analytic framework designed for data scientists, security res
 Getting Started
 ---------------
 
-Currently supports python 2.7
+Worked for Python3 and Python2 
 
 ```python
 sudo pip install -r requirements.txt
