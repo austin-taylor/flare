@@ -27,7 +27,6 @@ setup(
     SOFTWARE.""",
     long_description='Flare is a network analytic framework designed for data scientists, security researchers, and network professionals. Written in Python, it is designed for rapid prototyping and development of behavioral analytics, and intended to make identifying malicious behavior in networks as simple as possible.',
     packages=find_packages(),
-    install_requires=[''],
     scripts=['bin/hextoip', 'bin/iptohex', 'bin/ipwhois', 'bin/flare_beacon'],
     data_files=[('flare/data/whoisip/', [
         'flare/data/whoisip/asn_names_20160930.pkl',
