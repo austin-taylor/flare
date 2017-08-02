@@ -125,7 +125,7 @@ class elasticBeacon(object):
         self.whois = WhoisLookup()
         self.info = '{info}[INFO]{endc}'.format(info=bcolors.OKBLUE, endc=bcolors.ENDC)
         self.success = '{green}[SUCCESS]{endc}'.format(green=bcolors.OKGREEN, endc=bcolors.ENDC)
-        self.fields = [self.beacon_src_ip, self.beacon_dest_ip, self.beacon_destination_port, 'bytes_toserver','dest_degree', 'occurrences', 'percent', 'interval']
+        self.fields = [self.beacon_src_ip, self.beacon_dest_ip, self.beacon_destination_port, 'bytes_toserver', 'dest_degree', 'occurrences', 'percent', 'interval']
 
         try:
             self.vprint('{info}[INFO]{endc} Attempting to connect to elasticsearch...'.format(info=bcolors.OKBLUE,
@@ -313,7 +313,7 @@ class elasticBeacon(object):
                     SRC_IP = work[self.beacon_src_ip].unique()[0]
                     DEST_IP = work[self.beacon_dest_ip].unique()[0]
                     DEST_PORT = str(int(work[self.beacon_destination_port].unique()[0]))
-                    BYTES_TOSERVER = work[self.beacon_flow_bytes_toserver].unique()[0]
+                    BYTES_TOSERVER = work[self.beacon_flow_bytes_toserver].sum()
                     SRC_DEGREE = len(work[self.beacon_dest_ip].unique())
                     OCCURRENCES = total
                     self.l_list.acquire()
