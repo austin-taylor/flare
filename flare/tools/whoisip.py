@@ -1,46 +1,41 @@
-# -*- coding: utf-8 -*-
 import pyasn
-import sys
 import json
+import pickle as cPickle
 import os
 import argparse
 import datetime
+import logging
+import urllib
+import lxml.html
 
-if (sys.version_info > (3, 0)):
-    from urllib.request import urlopen
-    from html.parser import HTMLParser
-    import _pickle as pickle
-else:
-    from urllib2 import urlopen
-    import cPickle as pickle
-    from HTMLParser import HTMLParser
-
+from HTMLParser import HTMLParser
 
 LOCAL_DIR = os.path.dirname(os.path.realpath(__file__))
+LOG_PATH = os.path.join(LOCAL_DIR, '..','data', 'log.txt')
 
 
 class WhoisLookup:
+    """
+    Utility which returns ip and asn information for provided domains
+    """
 
     def __init__(self, asn_dat=None, asn_map=None):
 
         if asn_dat is not None:
             self.asndb = pyasn.pyasn(asn_dat)
         else:
-            self.asndb = pyasn.pyasn(os.path.join(
-                LOCAL_DIR, '..', 'data', 'whoisip', 'ipasn_20160916.1200.dat'))
 
+            self.asndb = pyasn.pyasn(os.path.join(
+                LOCAL_DIR, '..', 'data', 'whoisip', 'ipasn.dat'))
 
         if asn_map is not None:
             with open(asn_map, 'rb') as f:
                 self.names = json.loads(f.read())
         else:
             pkl_path = os.path.join(
-                LOCAL_DIR, '..', 'data', 'whoisip', 'asn_names_20160930.pkl')
+                LOCAL_DIR, '..', 'data', 'whoisip', 'asn_names.pkl')
             with open(pkl_path, 'rb') as f:
-                if (sys.version_info > (3, 0)):
-                    self.names = pickle.load(f, encoding='bytes')
-                else:
-                    self.names = pickle.load(f)
+                self.names = cPickle.load(f, encoding='latin1')
 
     def get_asn(self, ip):
         asn, netmask = self.asndb.lookup(ip)
@@ -50,25 +45,25 @@ class WhoisLookup:
         return self.asndb.lookup(ip)
 
     def get_name_by_ip(self, ip):
-        query_msg = "IP Not Found"
         try:
-            if (sys.version_info > (3, 0)):
-                asn = str(self.get_asn(ip)).encode()
-                if asn in self.names:
-                    query_msg = self.names[asn].decode()
-            elif (sys.version_info < (3,0)):
-                asn = str(self.get_asn(ip))
-                if asn in self.names:
-                    query_msg = self.names[asn]
-            return query_msg
+            asn = self.get_asn(ip)
+            if str(asn) in self.names:
+                return self.names[str(asn)]
+            else:
+                query_msg = "IP not found"
+                return query_msg
         except ValueError:
             except_msg = "Invalid input"
+
             return except_msg
 
     def domain_in_ip_whois_match(self, domain, ip):
         """
         Takes a domain and IP address and
         compares if the IP WHOIS is in the domain description
+        :param domain: domain description
+        :param ip: IP address to check
+        :return: domain_list or Exception e
         **REQUIRES DOMAIN TO BE BARE** www.google.com should be google**
         """
         try:
@@ -78,13 +73,12 @@ class WhoisLookup:
         except Exception as e:
             return e
 
-
     @staticmethod
     def create_new_asn_mapping(verbose=True):
         asnames_url = 'http://thyme.apnic.net/current/data-used-autnums'
         if verbose:
             print('Downloading asn names from http://thyme.apnic.net/current/data-used-autnums')
-        http = urlopen(asnames_url)
+        http = urllib.urlopen(asnames_url)
         data = http.read()
         http.close()
         if verbose:
@@ -102,7 +96,7 @@ class WhoisLookup:
         asnames_url = 'http://www.cidr-report.org/as2.0/autnums.html'
         if verbose:
             print('Downloading asn names from http://www.cidr-report.org/as2.0/autnums.html')
-        http = urlopen(asnames_url)
+        http = urllib.urlopen(asnames_url)
         data = http.read()
         http.close()
         if verbose:
@@ -115,6 +109,7 @@ class WhoisLookup:
 
 
 class ASNHTMLParser(HTMLParser, object):
+
     def __init__(self):
         super(ASNHTMLParser, self).__init__()
         self.current_tag = None
@@ -137,14 +132,55 @@ class ASNHTMLParser(HTMLParser, object):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Whois IP Utilities')
-    parser.add_argument('--asn_names', action='store_true', dest='asn_names', default=False)
-    args = parser.parse_args()
-    if args.asn_names:
-        asn_map = WhoisLookup.create_new_asn_mapping2(verbose=True)
+    logger = logging.getLogger(__name__)
+    logger.setLevel(logging.INFO)
+    formatter = logging.Formatter("%(message)-30s %(asctime)s\n", "%Y-%m-%d   %H:%M:%S")
+    file_handle = logging.FileHandler(LOG_PATH)
+    file_handle.setFormatter(formatter)
+    logger.addHandler(file_handle)
 
-        now = datetime.datetime.now()
-        file_name = 'asn_names_%s.pkl' % now.strftime('%Y%m%d')
-        print(('Saving %d entries to %s' % (len(list(asn_map.keys())), file_name)))
-        with open(file_name, 'wb') as f:
-            pickle.dump(asn_map, f)
+    logger.info('[UPDATE START]\t\t')
+    logger.info('[STARTED] \t\twhoisip.py')
+    try:
+        parser = argparse.ArgumentParser(description='Whois IP Utilities')
+        parser.add_argument('--asn_names', action='store_true',
+                            dest='asn_names', default=False)
+        args = parser.parse_args()
+        if args.asn_names:
+            # asn_map = WhoisLookup.create_new_asn_mapping(verbose=True)
+            asn_map = WhoisLookup.create_new_asn_mapping2(verbose=True)
+
+            now = datetime.datetime.now()
+            file_name = os.path.join(LOCAL_DIR,'..','data','whoisip','asn_names.pkl')
+            print('Saving %d entries to %s' % (len(asn_map.keys()), file_name))
+            with open(file_name, 'wb') as f:
+                cPickle.dump(asn_map, f)
+
+        today = datetime.datetime.now()
+        if today.month < 10:
+            month = '0'+str(today.month)
+        else:
+            month = str(today.month)
+        datem = (str(today.year) + '.' + month)
+
+        url = 'http://routeviews.org/bgpdata/%s/RIBS' % datem
+        connection = urllib.urlopen(url)
+        dom = lxml.html.fromstring(connection.read())
+        all_files = []
+        for link in dom.xpath('//a/@href'):
+            if 'bz2' in link:
+                all_files.append(link)
+        latest_file = all_files[-1]
+
+        url = urllib.urlopen(url + '/' + latest_file)
+
+        rib_path = str(os.path.join(LOCAL_DIR,'..','data','whoisip' , latest_file))
+        dat_path = str(os.path.join(LOCAL_DIR,'..','data','whoisip', 'ipasn.dat'))
+        with open(rib_path, 'wb') as output:
+            output.write(url.read())
+        os.system('pyasn_util_convert.py --single %s %s' %(rib_path,dat_path))
+        logger.info('[SUCCESS] \t\twhoisip.py')
+        os.system('rm %s' % rib_path)
+
+    except:
+        logger.info('[FAILURE] \t\twhoisip.py')

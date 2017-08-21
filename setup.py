@@ -29,8 +29,8 @@ setup(
     packages=find_packages(),
     scripts=['bin/hextoip', 'bin/iptohex', 'bin/ipwhois', 'bin/flare_beacon'],
     data_files=[('flare/data/whoisip/', [
-        'flare/data/whoisip/asn_names_20160930.pkl',
-        'flare/data/whoisip/ipasn_20160916.1200.dat']),
+        'flare/data/whoisip/asn_names.pkl',
+        'flare/data/whoisip/ipasn.dat']),
         ('flare/data/majestic', [
             'flare/data/majestic/majestic_million.pkl']),
         ('flare/data/tld', [
