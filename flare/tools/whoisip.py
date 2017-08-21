@@ -1,17 +1,24 @@
 import pyasn
 import json
-import pickle as cPickle
+import sys
 import os
 import argparse
 import datetime
 import logging
-import urllib
 import lxml.html
 
-from HTMLParser import HTMLParser
+if (sys.version_info > (3, 0)):
+    from urllib.request import urlopen
+    from html.parser import HTMLParser
+    import pickle
+else:
+    from urllib2 import urlopen
+    import cPickle as pickle
+    from HTMLParser import HTMLParser
 
 LOCAL_DIR = os.path.dirname(os.path.realpath(__file__))
 LOG_PATH = os.path.join(LOCAL_DIR, '..','data', 'log.txt')
+
 
 
 class WhoisLookup:
@@ -35,7 +42,10 @@ class WhoisLookup:
             pkl_path = os.path.join(
                 LOCAL_DIR, '..', 'data', 'whoisip', 'asn_names.pkl')
             with open(pkl_path, 'rb') as f:
-                self.names = cPickle.load(f, encoding='latin1')
+                if (sys.version_info > (3, 0)):
+                    self.names = pickle.load(f, encoding='latin1')
+                else:
+                    self.names = pickle.load(f)
 
     def get_asn(self, ip):
         asn, netmask = self.asndb.lookup(ip)
@@ -78,7 +88,7 @@ class WhoisLookup:
         asnames_url = 'http://thyme.apnic.net/current/data-used-autnums'
         if verbose:
             print('Downloading asn names from http://thyme.apnic.net/current/data-used-autnums')
-        http = urllib.urlopen(asnames_url)
+        http = urlopen(asnames_url)
         data = http.read()
         http.close()
         if verbose:
@@ -96,7 +106,7 @@ class WhoisLookup:
         asnames_url = 'http://www.cidr-report.org/as2.0/autnums.html'
         if verbose:
             print('Downloading asn names from http://www.cidr-report.org/as2.0/autnums.html')
-        http = urllib.urlopen(asnames_url)
+        http = urlopen(asnames_url)
         data = http.read()
         http.close()
         if verbose:
@@ -154,7 +164,7 @@ if __name__ == '__main__':
             file_name = os.path.join(LOCAL_DIR,'..','data','whoisip','asn_names.pkl')
             print('Saving %d entries to %s' % (len(asn_map.keys()), file_name))
             with open(file_name, 'wb') as f:
-                cPickle.dump(asn_map, f)
+                pickle.dump(asn_map, f)
 
         today = datetime.datetime.now()
         if today.month < 10:
@@ -164,7 +174,7 @@ if __name__ == '__main__':
         datem = (str(today.year) + '.' + month)
 
         url = 'http://routeviews.org/bgpdata/%s/RIBS' % datem
-        connection = urllib.urlopen(url)
+        connection = urlopen(url)
         dom = lxml.html.fromstring(connection.read())
         all_files = []
         for link in dom.xpath('//a/@href'):
@@ -172,7 +182,7 @@ if __name__ == '__main__':
                 all_files.append(link)
         latest_file = all_files[-1]
 
-        url = urllib.urlopen(url + '/' + latest_file)
+        url = urlopen(url + '/' + latest_file)
 
         rib_path = str(os.path.join(LOCAL_DIR,'..','data','whoisip' , latest_file))
         dat_path = str(os.path.join(LOCAL_DIR,'..','data','whoisip', 'ipasn.dat'))
