@@ -84,6 +84,7 @@ whois.get_name_by_ip('8.8.8.8')
 OUT: 'GOOGLE - Google Inc., US'
 
 from flare.tools.iputils import hex_to_ip, ip_to_hex
+
 ip_to_hex('8.8.8.8'), hex_to_ip('08080808')
 
 OUT: (u'08080808', '8.8.8.8')
