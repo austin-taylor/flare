@@ -75,7 +75,19 @@ print alexa.DOMAINS_TOP1M #Displays domains (in this case top 100)
 IP Utilities
 ------------
 ```python
-flare.tools.iputils
+
+from flare.tools.whoisip import WhoisLookup
+
+whois = WhoisLookup()
+whois.get_name_by_ip('8.8.8.8')
+
+OUT: 'GOOGLE - Google Inc., US'
+
+from flare.tools.iputils import hex_to_ip, ip_to_hex
+ip_to_hex('8.8.8.8'), hex_to_ip('08080808')
+
+OUT: (u'08080808', '8.8.8.8')
+
 ```
 *   Convert Hex to IP and vice/versa
 *   Check for Private, Multicast, or Reserved domains
