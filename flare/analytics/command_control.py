@@ -377,7 +377,7 @@ class elasticBeacon(object):
 
         if csv_out:
             self.vprint('{success} Writing csv to {csv_name}'.format(csv_name=csv_out, success=self.success))
-            beacon_df.to_csv(csv_out)
+            beacon_df.to_csv(csv_out, index=False)
 
         if html_out:
             self.vprint('{success} Writing html file to {html_out}'.format(html_out=html_out, success=self.success))
