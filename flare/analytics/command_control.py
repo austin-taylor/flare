@@ -23,6 +23,9 @@ from flare.tools.whoisip import WhoisLookup
 import time
 import warnings
 import os
+import datetime
+import json
+
 warnings.filterwarnings('ignore')
 
 config_default = os.path.join(os.path.dirname(__file__), '..', '..', 'configs/elasticsearch.ini')
@@ -310,7 +313,7 @@ class elasticBeacon(object):
                 if key < self.min_interval:
                     del d[key]
             
-            # Finding the total numnber of events
+            # Finding the total number of events
             total = sum(d.values())
             
             if d and total > self.MIN_OCCURRENCES:
@@ -330,7 +333,7 @@ class elasticBeacon(object):
             
             q_job.task_done()
 
-    def find_beacons(self, group=True, focus_outbound=False, whois=True, csv_out=None, html_out=None):
+    def find_beacons(self, group=True, focus_outbound=False, whois=True, csv_out=None, html_out=None, json_out=None):
 
         for triad_id in self.high_freq:
             self.q_job.put(triad_id)
@@ -370,8 +373,8 @@ class elasticBeacon(object):
         if group:
             self.vprint('{info} Grouping by destination group IP'.format(info=self.info))
 
-        if whois:
-            self.fields.insert(self.fields.index(self.beacon_dest_ip), 'dest_whois')
+            if whois:
+                self.fields.insert(self.fields.index(self.beacon_dest_ip), 'dest_whois')
             beacon_df = pd.DataFrame(beacon_df.groupby(self.fields).size())
             beacon_df.drop(0, axis=1, inplace=True)
 
@@ -382,5 +385,16 @@ class elasticBeacon(object):
         if html_out:
             self.vprint('{success} Writing html file to {html_out}'.format(html_out=html_out, success=self.success))
             beacon_df.to_html(html_out)
+
+        if json_out:
+            self.vprint('{success} Writing json file to {json_out}'.format(json_out=json_out, success=self.success))
+            now = datetime.datetime.now().isoformat()
+            beacon_df['timestamp'] = now
+            beacon_df['period'] = self.period
+            beacons = beacon_df.to_dict(orient="records")
+
+            with open(json_out, 'a') as out_file:
+                for beacon in beacons:
+                    out_file.write(json.dumps(beacon) + '\n')
 
         return beacon_df
