@@ -38,6 +38,7 @@ def main():
     parser.add_argument('-fo', '--focus_outbound', dest='focus_outbound', action='store_true', default=False, help='Removes private & multicast IPs')
     parser.add_argument('-csv', '--csv_out', dest='csv_out',  default=None, help='Name of CSV to be written')
     parser.add_argument('-html', '--html_out', dest='html_out', default=None, help='Name of HTML File to be written (works best with group)')
+    parser.add_argument('-json', '--json_out', dest='json_out', default=None, help='Name of JSON File to be written')
     parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', default=True, help='Prints status out to screen (defaults to True)')
     args = parser.parse_args()
 
@@ -65,10 +66,11 @@ def main():
                                   whois=args.whois,
                                   focus_outbound=args.focus_outbound,
                                   csv_out=args.csv_out,
-                                  html_out=args.html_out)
+                                  html_out=args.html_out,
+                                  json_out=args.json_out)
 
 
-        if not args.html_out and not args.csv_out:
+        if not args.html_out and not args.csv_out and not args.json_out:
             print('{info}[INFO]{endc} - csv_out and html_out not selected. Print results to screen.'.format(info=bcolors.OKBLUE, endc=bcolors.ENDC))
             print(beacons)
 
