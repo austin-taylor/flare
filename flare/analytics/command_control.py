@@ -391,6 +391,7 @@ class elasticBeacon(object):
             now = datetime.datetime.now().isoformat()
             beacon_df['timestamp'] = now
             beacon_df['period'] = self.period
+            beacon_df['event_type'] = "beaconing"
             beacons = beacon_df.to_dict(orient="records")
 
             with open(json_out, 'a') as out_file:
