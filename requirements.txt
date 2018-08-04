@@ -14,3 +14,4 @@ python-geoip-geolite2
 elasticsearch
 ConfigParser
 pandas
+python-whois
