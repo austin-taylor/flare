@@ -194,7 +194,7 @@ class elasticBeacon(object):
                                 "must": [
                                     {
                                         "range": {
-                                            "timestamp": {
+                                            self.beacon_timestamp: {
                                                 "gte": gte,
                                                 "lte": lte,
                                                 "format": "epoch_millis"
