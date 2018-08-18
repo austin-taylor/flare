@@ -15,3 +15,4 @@ elasticsearch
 ConfigParser
 pandas
 python-whois
+lxml
