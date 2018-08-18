@@ -92,6 +92,7 @@ class elasticBeacon(object):
                 self.beacon_timestamp = self.config.get('beacon', 'field_timestamp')
                 self.beacon_flow_bytes_toserver = self.config.get('beacon', 'field_flow_bytes_toserver')
                 self.beacon_flow_id = self.config.get('beacon', 'field_flow_id')
+                self.beacon_event_type = self.config.get('beacon','event_type')
                 self.verbose = self.config.config.getboolean('beacon', 'verbose')
                 self.auth_user = self.config.config.get('beacon','username')
                 self.auth_password = self.config.config.get('beacon', 'password')
@@ -124,6 +125,7 @@ class elasticBeacon(object):
             self.beacon_timestamp = '@timestamp'
             self.beacon_flow_bytes_toserver = 'bytes_toserver'
             self.beacon_flow_id = 'flow_id'
+            self.beacon_event_type = 'flow'
             self.verbose = verbose
             self.suricata_defaults = False
 
@@ -205,7 +207,7 @@ class elasticBeacon(object):
                                 "must_not": []
                             }
                         },
-                            {"term": {"event_type": "flow"}}
+                            {"term": {"event_type": self.beacon_event_type}}
                         ]
                     }
                 }
