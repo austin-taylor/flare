@@ -50,8 +50,6 @@ Also available in commandline:
 CSV OUTPUT
 flare_beacon --whois --focus_outbound -mo=100 --csv_out=beacon_results.csv
 
-or
-
 HTML OUTPUT
 flare_beacon --group --whois --focus_outbound -c configs/elasticsearch.ini -html beacons.html
 
