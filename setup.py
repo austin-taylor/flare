@@ -2,7 +2,7 @@ from setuptools import find_packages, setup
 
 setup(
     name='Flare',
-    version='0.3',
+    version='0.4',
     platforms=["any"],  # or more specific, e.g. "win32", "cygwin", "osx"
     license="""MIT License
 
@@ -42,6 +42,11 @@ setup(
             'flare/data/tld/tld_list.pkl']),
         ('flare/data/misc', [
             'flare/data/misc/dga_domains.txt',
-            'flare/data/misc/words.txt'])]
+            'flare/data/misc/words.txt'])],
+     extras_require={
+        ':python_version == "2.7"': [
+            'ipaddr==2.1.11',
+        ],
+    }
 )
 
