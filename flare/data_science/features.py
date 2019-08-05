@@ -8,10 +8,13 @@ import pandas as pd
 from collections import Counter
 from flare.tools.alexa import Alexa
 
+
 import logging
+logging.getLogger("tldextract").setLevel(logging.CRITICAL)
+
 
 try:
-    #import sklearn
+    import sklearn
     from sklearn import ensemble
     from sklearn import feature_extraction
     from sklearn.model_selection import train_test_split
@@ -146,6 +149,7 @@ class dga_classifier(object):
         self.entropy = entropy
         self.domain_extract = domain_extract
 
+
         alexa_df = pd.DataFrame(list(self.a.DOMAINS_TOP1M))
         alexa_df.columns = ['uri']
         alexa_df['domain'] = [self.domain_extract(
@@ -214,7 +218,7 @@ class dga_classifier(object):
 
         weird_cond = (all_domains['class'] == 'legit') & (
             all_domains['word_grams'] < 3) & (all_domains['alexa_grams'] < 2)
-        weird = all_domains[weird_cond]
+        #weird = all_domains[weird_cond]
 
         not_weird = all_domains[all_domains['class'] != 'weird']
         X = not_weird.as_matrix(
@@ -245,4 +249,6 @@ class dga_classifier(object):
             _dict_match = self.dict_counts * self.dict_vc.transform([domain]).T
             _X = [len(domain), self.entropy(
                 domain), _alexa_match, _dict_match]
+            if int(sklearn.__version__.split('.')[1]) > 20:
+                _X = [_X]
             return self.clf.predict(_X)[0]
