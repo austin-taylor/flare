@@ -140,13 +140,13 @@ class elasticBeacon(object):
 
         try:
             _ = (self.auth_user, self.auth_password)
+            self.auth = "Enabled"
         except AttributeError as e:
-            self.auth = None
+            self.auth = "None"
 
         try:
-            self.vprint('{info}[INFO]{endc} Attempting to connect to elasticsearch...'.format(info=bcolors.OKBLUE,
-                                                                                        endc=bcolors.ENDC))
-            if self.auth == None:
+            self.vprint('{info}[INFO]{endc} Attempting to connect to elasticsearch...'.format(info=bcolors.OKBLUE, endc=bcolors.ENDC))
+            if self.auth == "None":
                 self.es = Elasticsearch(self.es_host, port=self.es_port, timeout=self.es_timeout, verify_certs=False)
             else:
                 self.es = Elasticsearch(self.es_host, port=self.es_port, timeout=self.es_timeout, http_auth=(self.auth_user, self.auth_password), verify_certs=False)
