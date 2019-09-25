@@ -22,7 +22,7 @@ Once **Flare** is installed you may use it via the command line by calling **fla
 
 Example command below:
 
-```python
+```bash
 flare_beacon -c /path/to/flare/config/elasticsearch.ini --focus_outbound --whois flare_beacon -json /tmp/flare.json
 ```
 
