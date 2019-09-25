@@ -15,6 +15,17 @@ sudo pip install -r requirements.txt
 python setup.py install
 ```
 
+First Use
+------------
+
+Once **Flare** is installed you may use it via the command line by calling **flare_beacon**. You can use command line parameters or call a configuration file (recommended). See the configs directory for sample configuration files.
+
+Example command below:
+
+```python
+flare_beacon -c /path/to/flare/config/elasticsearch.ini --focus_outbound --whois flare_beacon -json /tmp/flare.json
+```
+
 Core Features
 -------------
 ####
