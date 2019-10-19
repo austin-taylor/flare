@@ -15,7 +15,7 @@ def main():
 
     query_i = args.hex_value
 
-    print hex_to_ip(query_i)
+    print(hex_to_ip(query_i))
 
 
 if __name__ == '__main__':
