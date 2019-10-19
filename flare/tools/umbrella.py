@@ -52,3 +52,6 @@ class Umbrella(object):
             return True
 
         return False
+
+    def __contains__(self, word):
+        return self.domain_tld_in_umbrella(word)
