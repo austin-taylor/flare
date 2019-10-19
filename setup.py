@@ -42,7 +42,10 @@ setup(
             'flare/data/tld/tld_list.pkl']),
         ('flare/data/misc', [
             'flare/data/misc/dga_domains.txt',
-            'flare/data/misc/words.txt'])],
+            'flare/data/misc/words.txt']),
+        ('flare/data/common_crawl', [
+            'flare/data/common_crawl/common-crawl-1m.csv']),
+    ],
      extras_require={
         ':python_version == "2.7"': [
             'ipaddr==2.1.11',
