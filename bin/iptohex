@@ -2,7 +2,7 @@
 
 import argparse
 
-from flare.utils.iputils import ip_to_hex
+from flare.tools.iputils import ip_to_hex
 
 
 def main():
@@ -15,7 +15,7 @@ def main():
 
     query_i = args.ipv4_value
 
-    print ip_to_hex(query_i)
+    print(ip_to_hex(query_i))
 
 
 if __name__ == '__main__':

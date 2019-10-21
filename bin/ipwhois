@@ -17,7 +17,7 @@ def main():
     raw_results = json.dumps(whoisip.WhoisLookup().get_name_by_ip(
         query_ip), sort_keys=True, indent=4)
 
-    print raw_results
+    print(raw_results)
 
 
 if __name__ == '__main__':
