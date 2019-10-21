@@ -40,6 +40,9 @@ class majesticMillion(object):
     def domain_in_majestic(self, domain):
         return domain in self.MAJESTIC_DOMAINS
 
+    def __contains__(self, domain):
+        return self.domain_in_majestic(domain)
+
 
 
 

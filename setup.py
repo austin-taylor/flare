@@ -45,6 +45,8 @@ setup(
             'flare/data/misc/words.txt']),
         ('flare/data/common_crawl', [
             'flare/data/common_crawl/common-crawl-1m.csv']),
+        ('flare/data/umbrella', [
+            'flare/data/umbrella/top-1m.csv']),
     ],
      extras_require={
         ':python_version == "2.7"': [

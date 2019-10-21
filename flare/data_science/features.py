@@ -100,14 +100,14 @@ def domain_tld_extract(domain):
     ip_check = ip_matcher(domain)
     if ip_check:
         return domain
-    if len(t) > 2:
-        domain = '.'.join(t[-2:])
-    if len(t) == 2:
-        domain = '.'.join(t)
-    if ':' in domain:
-        return domain.split(':')[0]
-    else:
+
+    try:
+        ext = tldextract.extract(domain)
+        if ext.suffix:
+            return '{}.{}'.format(ext.domain, ext.suffix)
         return domain
+    except:
+        return ''
 
 
 def non_alnum_count(string):
