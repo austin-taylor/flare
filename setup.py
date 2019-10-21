@@ -43,6 +43,8 @@ setup(
         ('flare/data/misc', [
             'flare/data/misc/dga_domains.txt',
             'flare/data/misc/words.txt']),
+        ('flare/data/common_crawl', [
+            'flare/data/common_crawl/common-crawl-1m.csv']),
         ('flare/data/umbrella', [
             'flare/data/umbrella/top-1m.csv']),
     ],
