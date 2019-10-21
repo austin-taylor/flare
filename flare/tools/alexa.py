@@ -25,11 +25,15 @@ class Alexa(object):
     def subdomain_in_alexa(self, word):
         return word in self.SUBDOMAINS_TOP1M
 
+    def __contains__(self, word):
+        return self.domain_in_alexa(word)
+
 
 # EXAMPLES
 
 #alexa = Alexa(limit=100)
 #print alexa.domain_in_alexa('google.com')
+#print 'google.com' in alexa
 #print alexa.subdomain_in_alexa('com')
 
 #print alexa.DOMAINS_TOP1M
