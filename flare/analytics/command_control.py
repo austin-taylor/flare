@@ -265,6 +265,7 @@ class elasticBeacon(object):
 
         return query
 
+    # this is a sliding window average - for notes... percent grouping is "not exactly a thing" .... with love tho
     def percent_grouping(self, d, total):
         mx = 0
         interval = 0
