@@ -78,7 +78,7 @@ class elasticBeacon(object):
                 self.es_host = self.config.get('beacon', 'es_host')
                 self.es_port = int(self.config.get('beacon', 'es_port'))
                 self.es_index = self.config.get('beacon', 'es_index')
-                self.use_ssl = self.config.get('beacon', 'use_ssl')
+                self.use_ssl = self.config.config.getboolean('beacon', 'use_ssl')
                 self.MIN_OCCURRENCES = int(self.config.get('beacon','min_occur'))
                 self.MIN_PERCENT = int(self.config.get('beacon','min_percent'))
                 self.WINDOW = int(self.config.get('beacon','window'))
