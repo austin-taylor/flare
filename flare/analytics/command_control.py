@@ -136,7 +136,6 @@ class elasticBeacon(object):
         self.ver = {'4': {'filtered': 'query'}, '5': {'bool': 'must'}}
         self.filt = list(self.ver[self.kibana_version].keys())[0]
         self.query = list(self.ver[self.kibana_version].values())[0]
-        self.debug = debug
         self.whois = WhoisLookup()
         self.info = '{info}[INFO]{endc}'.format(info=bcolors.OKBLUE, endc=bcolors.ENDC)
         self.success = '{green}[SUCCESS]{endc}'.format(green=bcolors.OKGREEN, endc=bcolors.ENDC)
