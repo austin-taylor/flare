@@ -301,7 +301,7 @@ class elasticBeacon(object):
         self.dprint(query)
         resp = helpers.scan(query=query, client=self.es, scroll="90m", index=self.es_index, timeout="10m")
         df = pd.io.json.json_normalize([rec['_source'] for rec in resp])
-        df.rename(columns=dict((x, x.replace("_source.", "")) for x in df.columns), inplace=True
+        df.rename(columns=dict((x, x.replace("_source.", "")) for x in df.columns), inplace=True)
         if len(df) == 0:
             raise Exception("Elasticsearch did not retrieve any data. Please ensure your settings are correct inside the config file.")
 
