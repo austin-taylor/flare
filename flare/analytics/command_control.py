@@ -102,7 +102,7 @@ class elasticBeacon(object):
                 try:
                     self.debug = self.config.config.getboolean('beacon', 'debug')
                 except:
-                    pass
+                    self.debug = debug
 
 
             except Exception as e:
@@ -132,6 +132,7 @@ class elasticBeacon(object):
             self.filter = ''
             self.verbose = verbose
             self.suricata_defaults = False
+            self.debug = debug
 
         self.ver = {'4': {'filtered': 'query'}, '5': {'bool': 'must'}}
         self.filt = list(self.ver[self.kibana_version].keys())[0]
