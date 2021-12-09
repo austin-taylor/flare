@@ -93,6 +93,7 @@ class elasticBeacon(object):
                 self.beacon_timestamp = self.config.get('beacon', 'field_timestamp')
                 self.beacon_flow_bytes_toserver = self.config.get('beacon', 'field_flow_bytes_toserver')
                 self.beacon_flow_id = self.config.get('beacon', 'field_flow_id')
+                self.beacon_event_key = self.config.get('beacon','event_key')
                 self.beacon_event_type = self.config.get('beacon','event_type')
                 self.filter = self.config.get('beacon','filter')
                 self.verbose = self.config.config.getboolean('beacon', 'verbose')
@@ -129,6 +130,7 @@ class elasticBeacon(object):
             self.beacon_flow_bytes_toserver = 'bytes_toserver'
             self.beacon_flow_id = 'flow_id'
             self.beacon_event_type = 'flow'
+            self.beacon_event_key = 'event_type'
             self.filter = ''
             self.verbose = verbose
             self.suricata_defaults = False
@@ -221,7 +223,7 @@ class elasticBeacon(object):
                                 "must_not": []
                             }
                         },
-                            {"term": {"event_type": self.beacon_event_type}}
+                            {"term": {self.beacon_event_key: self.beacon_event_type}}
                         ]
                     }
                 }
@@ -299,15 +301,13 @@ class elasticBeacon(object):
                                 self.beacon_timestamp, FLOW_BYTES, self.beacon_flow_id)
         self.dprint(query)
         resp = helpers.scan(query=query, client=self.es, scroll="90m", index=self.es_index, timeout="10m")
-        df = pd.DataFrame([rec['_source'] for rec in resp])
+        df = pd.io.json.json_normalize([rec['_source'] for rec in resp])
+        df.rename(columns=dict((x, x.replace("_source.", "")) for x in df.columns), inplace=True)
         if len(df) == 0:
             raise Exception("Elasticsearch did not retrieve any data. Please ensure your settings are correct inside the config file.")
 
         self.dprint(df)
-        df['dest_port'] = df[self.beacon_destination_port].fillna(0).astype(int)
-
-        if 'flow' in df.columns:
-            df[self.beacon_flow_bytes_toserver] = df['flow'].apply(lambda x: x.get(self.beacon_flow_bytes_toserver))
+        df[self.beacon_destination_port] = df[self.beacon_destination_port].fillna(0).astype(int)
 
         df['triad_id'] = (df[self.beacon_src_ip] + df[self.beacon_dest_ip] + df[self.beacon_destination_port].astype(str)).apply(hash)
         df['triad_freq'] = df.groupby('triad_id')['triad_id'].transform('count').fillna(0).astype(int)
