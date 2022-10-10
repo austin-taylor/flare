@@ -264,7 +264,8 @@ class elasticBeacon(object):
         if fields:
             query["_source"] = list(fields)
             self.dprint(query)
-
+        
+        print(self.query)
         return query
 
     # this is a sliding window average - for notes... percent grouping is "not exactly a thing" .... with love tho
