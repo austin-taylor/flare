@@ -190,8 +190,10 @@ class elasticBeacon(object):
         SECONDS = 1000
         MINUTES = 60 * SECONDS
         HOURS = 60 * MINUTES
-        lte = NOW
-        gte = int(NOW - h * HOURS)
+        # lte = NOW
+        lte = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S.%f%z')
+        # gte = int(NOW - h * HOURS)
+        gte = (datetime.datetime.now() - datetime.timedelta(hours=h)).strftime('%Y-%m-%dT%H:%M:%S.%f%z')
 
         if self.es_index:
             if self.filter:
@@ -214,8 +216,7 @@ class elasticBeacon(object):
                                         "range": {
                                             self.beacon_timestamp: {
                                                 "gte": gte,
-                                                "lte": lte,
-                                                "format": "epoch_millis"
+                                                "lte": lte
                                             }
                                         }
                                     }
@@ -249,8 +250,7 @@ class elasticBeacon(object):
                                         "range": {
                                             "timestamp": {
                                                 "gte": gte,
-                                                "lte": lte,
-                                                "format": "epoch_millis"
+                                                "lte": lte
                                             }
                                         }
                                     }
@@ -265,7 +265,7 @@ class elasticBeacon(object):
             query["_source"] = list(fields)
             self.dprint(query)
         
-        print(self.query)
+        print(f"SCAN QUERY: {query}")
         return query
 
     # this is a sliding window average - for notes... percent grouping is "not exactly a thing" .... with love tho
