@@ -227,7 +227,8 @@ class elasticBeacon(object):
                             {"term": {self.beacon_event_key: self.beacon_event_type}}
                         ]
                     }
-                }
+                },
+                "sort": ["_doc"]
             }
         else:
             if self.filter:
@@ -259,7 +260,8 @@ class elasticBeacon(object):
                             }
                         }
                     }
-                }
+                },
+                "sort": ["_doc"]
             }
         if fields:
             query["_source"] = list(fields)
