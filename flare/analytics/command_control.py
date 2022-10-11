@@ -136,7 +136,7 @@ class elasticBeacon(object):
             self.verbose = verbose
             self.suricata_defaults = False
             self.debug = debug
-            self.domain_field = 'domain'
+            self.domain_field = "''"
 
         self.ver = {'4': {'filtered': 'query'}, '5': {'bool': 'must'}}
         self.filt = list(self.ver[self.kibana_version].keys())[0]
@@ -145,6 +145,8 @@ class elasticBeacon(object):
         self.info = '{info}[INFO]{endc}'.format(info=bcolors.OKBLUE, endc=bcolors.ENDC)
         self.success = '{green}[SUCCESS]{endc}'.format(green=bcolors.OKGREEN, endc=bcolors.ENDC)
         self.fields = [self.beacon_src_ip, self.beacon_dest_ip, self.beacon_destination_port, 'dest_degree', 'occurrences', 'percent', 'interval']
+        if self.domain_field != "''":
+            self.fields.append(self.domain_field)
 
         try:
             _ = (self.auth_user, self.auth_password)
