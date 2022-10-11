@@ -304,8 +304,7 @@ class elasticBeacon(object):
         query = self.hour_query(self.period, self.beacon_src_ip, self.beacon_dest_ip, self.beacon_destination_port,
                                 self.beacon_timestamp, FLOW_BYTES, self.beacon_flow_id)
         self.dprint(query)
-        #scroll="90m"
-        resp = helpers.scan(query=query, client=self.es, scroll="1m", index=self.es_index, request_timeout=self.es_timeout)
+        resp = helpers.scan(query=query, client=self.es, scroll="90m", index=self.es_index, request_timeout=self.es_timeout)
         df = pd.io.json.json_normalize([rec['_source'] for rec in resp])
         df.rename(columns=dict((x, x.replace("_source.", "")) for x in df.columns), inplace=True)
         if len(df) == 0:
