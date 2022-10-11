@@ -356,9 +356,11 @@ class elasticBeacon(object):
                     DEST_PORT = str(int(work[self.beacon_destination_port].unique()[0]))
                     # BYTES_TOSERVER = work[self.beacon_flow_bytes_toserver].sum()
                     SRC_DEGREE = len(work[self.beacon_dest_ip].unique())
-                    OCCURRENCES = total
+                    OCCURRENCES = total                    
                     self.l_list.acquire()
                     beacon_list.append([SRC_IP, DEST_IP, DEST_PORT, SRC_DEGREE, OCCURRENCES, PERCENT, WINDOW])
+                    if self.domain_field != "''":
+                        beacon_list[-1].append(work[self.domain_field].unique()[0])
                     self.l_list.release()
 
             q_job.task_done()
