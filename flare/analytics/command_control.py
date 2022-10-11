@@ -358,9 +358,11 @@ class elasticBeacon(object):
                     SRC_DEGREE = len(work[self.beacon_dest_ip].unique())
                     OCCURRENCES = total                    
                     self.l_list.acquire()
-                    beacon_list.append([SRC_IP, DEST_IP, DEST_PORT, SRC_DEGREE, OCCURRENCES, PERCENT, WINDOW])
                     if self.domain_field != "''":
-                        beacon_list[-1].append(work[self.domain_field].unique()[0])
+                        DOMAIN = work[self.domain_field].unique()[0]
+                        beacon_list.append([SRC_IP, DEST_IP, DEST_PORT, SRC_DEGREE, OCCURRENCES, PERCENT, WINDOW,DOMAIN])
+                    else:    
+                        beacon_list.append([SRC_IP, DEST_IP, DEST_PORT, SRC_DEGREE, OCCURRENCES, PERCENT, WINDOW])
                     self.l_list.release()
 
             q_job.task_done()
