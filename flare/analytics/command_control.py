@@ -91,8 +91,8 @@ class elasticBeacon(object):
                 self.beacon_dest_ip = self.config.get('beacon', 'field_destination_ip')
                 self.beacon_destination_port = self.config.get('beacon', 'field_destination_port')
                 self.beacon_timestamp = self.config.get('beacon', 'field_timestamp')
-                self.beacon_flow_bytes_toserver = self.config.get('beacon', 'field_flow_bytes_toserver')
-                self.beacon_flow_id = self.config.get('beacon', 'field_flow_id')
+                # self.beacon_flow_bytes_toserver = self.config.get('beacon', 'field_flow_bytes_toserver')
+                # self.beacon_flow_id = self.config.get('beacon', 'field_flow_id')
                 self.beacon_event_key = self.config.get('beacon','event_key')
                 self.beacon_event_type = self.config.get('beacon','event_type')
                 self.filter = self.config.get('beacon','filter')
@@ -100,6 +100,7 @@ class elasticBeacon(object):
                 self.auth_user = self.config.config.get('beacon','username')
                 self.auth_password = self.config.config.get('beacon', 'password')
                 self.suricata_defaults = self.config.config.getboolean('beacon','suricata_defaults')
+                self.domain_field = self.config.get('beacon','domain_field')
                 try:
                     self.debug = self.config.config.getboolean('beacon', 'debug')
                 except:
@@ -127,14 +128,15 @@ class elasticBeacon(object):
             self.beacon_dest_ip = 'dest_ip'
             self.beacon_destination_port = 'dest_port'
             self.beacon_timestamp = '@timestamp'
-            self.beacon_flow_bytes_toserver = 'bytes_toserver'
-            self.beacon_flow_id = 'flow_id'
+            # self.beacon_flow_bytes_toserver = 'bytes_toserver'
+            # self.beacon_flow_id = 'flow_id'
             self.beacon_event_type = 'flow'
             self.beacon_event_key = 'event_type'
             self.filter = ''
             self.verbose = verbose
             self.suricata_defaults = False
             self.debug = debug
+            self.domain_field = 'domain'
 
         self.ver = {'4': {'filtered': 'query'}, '5': {'bool': 'must'}}
         self.filt = list(self.ver[self.kibana_version].keys())[0]
@@ -142,7 +144,7 @@ class elasticBeacon(object):
         self.whois = WhoisLookup()
         self.info = '{info}[INFO]{endc}'.format(info=bcolors.OKBLUE, endc=bcolors.ENDC)
         self.success = '{green}[SUCCESS]{endc}'.format(green=bcolors.OKGREEN, endc=bcolors.ENDC)
-        self.fields = [self.beacon_src_ip, self.beacon_dest_ip, self.beacon_destination_port, self.beacon_flow_bytes_toserver, 'dest_degree', 'occurrences', 'percent', 'interval']
+        self.fields = [self.beacon_src_ip, self.beacon_dest_ip, self.beacon_destination_port, 'dest_degree', 'occurrences', 'percent', 'interval']
 
         try:
             _ = (self.auth_user, self.auth_password)
@@ -265,6 +267,8 @@ class elasticBeacon(object):
             }
         if fields:
             query["_source"] = list(fields)
+            if self.domain_field != '':
+                query["_source"].append(self.domain_field)
             self.dprint(query)
         
         print(f"SCAN QUERY: {query}")
@@ -297,12 +301,12 @@ class elasticBeacon(object):
     def run_query(self):
         self.vprint("{info} Gathering flow data... this may take a while...".format(info=self.info))
 
-        FLOW_BYTES = self.beacon_flow_bytes_toserver
-        if self.suricata_defaults:
-            FLOW_BYTES = 'flow.' + FLOW_BYTES
+        # FLOW_BYTES = self.beacon_flow_bytes_toserver
+        # if self.suricata_defaults:
+        #     FLOW_BYTES = 'flow.' + FLOW_BYTES
 
         query = self.hour_query(self.period, self.beacon_src_ip, self.beacon_dest_ip, self.beacon_destination_port,
-                                self.beacon_timestamp, FLOW_BYTES, self.beacon_flow_id)
+                                self.beacon_timestamp)
         self.dprint(query)
         resp = helpers.scan(query=query, client=self.es, scroll="4m", size=3500, index=self.es_index, request_timeout=self.es_timeout,raise_on_error=False)
         df = pd.io.json.json_normalize([rec['_source'] for rec in resp])
@@ -348,11 +352,11 @@ class elasticBeacon(object):
                     SRC_IP = work[self.beacon_src_ip].unique()[0]
                     DEST_IP = work[self.beacon_dest_ip].unique()[0]
                     DEST_PORT = str(int(work[self.beacon_destination_port].unique()[0]))
-                    BYTES_TOSERVER = work[self.beacon_flow_bytes_toserver].sum()
+                    # BYTES_TOSERVER = work[self.beacon_flow_bytes_toserver].sum()
                     SRC_DEGREE = len(work[self.beacon_dest_ip].unique())
                     OCCURRENCES = total
                     self.l_list.acquire()
-                    beacon_list.append([SRC_IP, DEST_IP, DEST_PORT, BYTES_TOSERVER, SRC_DEGREE, OCCURRENCES, PERCENT, WINDOW])
+                    beacon_list.append([SRC_IP, DEST_IP, DEST_PORT, SRC_DEGREE, OCCURRENCES, PERCENT, WINDOW])
                     self.l_list.release()
 
             q_job.task_done()
