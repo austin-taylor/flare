@@ -267,7 +267,7 @@ class elasticBeacon(object):
             }
         if fields:
             query["_source"] = list(fields)
-            if self.domain_field != '':
+            if self.domain_field != "''":
                 query["_source"].append(self.domain_field)
             self.dprint(query)
         
