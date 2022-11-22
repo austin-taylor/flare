@@ -367,7 +367,7 @@ class elasticBeacon(object):
 
             q_job.task_done()
 
-    def find_beacons(self, group=True, focus_outbound=False, whois=False, csv_out=None, html_out=None, json_out=None):
+    def find_beacons(self, group=False, focus_outbound=True, whois=False, csv_out=None, html_out=None, json_out=None):
 
         for triad_id in self.high_freq:
             self.q_job.put(triad_id)
