@@ -141,7 +141,7 @@ class elasticBeacon(object):
         self.ver = {'4': {'filtered': 'query'}, '5': {'bool': 'must'}}
         self.filt = list(self.ver[self.kibana_version].keys())[0]
         self.query = list(self.ver[self.kibana_version].values())[0]
-        self.whois = WhoisLookup()
+        # self.whois = WhoisLookup()
         self.info = '{info}[INFO]{endc}'.format(info=bcolors.OKBLUE, endc=bcolors.ENDC)
         self.success = '{green}[SUCCESS]{endc}'.format(green=bcolors.OKGREEN, endc=bcolors.ENDC)
         self.fields = [self.beacon_src_ip, self.beacon_dest_ip, self.beacon_destination_port, 'dest_degree', 'occurrences', 'percent', 'interval']
@@ -367,7 +367,7 @@ class elasticBeacon(object):
 
             q_job.task_done()
 
-    def find_beacons(self, group=True, focus_outbound=False, whois=True, csv_out=None, html_out=None, json_out=None):
+    def find_beacons(self, group=True, focus_outbound=False, whois=False, csv_out=None, html_out=None, json_out=None):
 
         for triad_id in self.high_freq:
             self.q_job.put(triad_id)
