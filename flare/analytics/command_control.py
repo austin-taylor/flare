@@ -55,6 +55,7 @@ class elasticBeacon(object):
                  es_index='logstash-flow-*',
                  kibana_version='4',
                  verbose=True,
+                 data_fields=[],
                  debug=True):
         """
 
@@ -147,6 +148,8 @@ class elasticBeacon(object):
         self.fields = ['dest_degree', 'occurrences', 'percent', 'interval']
         if self.domain_field != "''":
             self.fields.append(self.domain_field)
+        self.fields += data_fields
+        self.data_fields = data_fields
 
         try:
             _ = (self.auth_user, self.auth_password)
@@ -313,9 +316,9 @@ class elasticBeacon(object):
         resp = helpers.scan(query=query, client=self.es, scroll="4m", size=3500, index=self.es_index, request_timeout=self.es_timeout,raise_on_error=False)
         df = pd.io.json.json_normalize([rec['_source'] for rec in resp])
         df.rename(columns=dict((x, x.replace("_source.", "")) for x in df.columns), inplace=True)
-        for field in df.columns.tolist():
-            if field not in self.fields:
-                self.fields.append(field)
+        # for field in df.columns.tolist():
+        #     if field not in self.fields:
+        #         self.fields.append(field)
         
         if len(df) == 0:
             raise Exception("Elasticsearch did not retrieve any data. Please ensure your settings are correct inside the config file.")
@@ -327,7 +330,7 @@ class elasticBeacon(object):
         df['triad_freq'] = df.groupby('triad_id')['triad_id'].transform('count').fillna(0).astype(int)
         self.high_freq = list(df[df.triad_freq > self.MIN_OCCURRENCES].groupby('triad_id').groups.keys())
         # print(df)
-        # df.fillna(0, inplace=True)
+        df.fillna(0, inplace=True)
         print("Finished gathering data...")
         return df
 
@@ -372,7 +375,7 @@ class elasticBeacon(object):
                         list_to_append = [SRC_DEGREE, OCCURRENCES, PERCENT, WINDOW,DOMAIN]
                     else:    
                         list_to_append = [SRC_DEGREE, OCCURRENCES, PERCENT, WINDOW]
-                    for column in work.columns.tolist():
+                    for column in self.data_fields:
                         list_to_append.append(work.iloc[0][column])
                     print("beacon found")
                     print(list_to_append)
