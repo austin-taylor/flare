@@ -362,7 +362,7 @@ class elasticBeacon(object):
                     # BYTES_TOSERVER = work[self.beacon_flow_bytes_toserver].sum()
                     list_to_append = []
                     for column in work.columns:
-                        list_to_append.append(work.iloc[0][column])
+                        list_to_append.append(work.iloc[0][column].values[0])
                     SRC_DEGREE = len(work[self.beacon_dest_ip].unique())
                     OCCURRENCES = total                    
                     self.l_list.acquire()
