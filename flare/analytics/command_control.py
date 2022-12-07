@@ -96,7 +96,8 @@ class elasticBeacon(object):
                 # self.beacon_flow_id = self.config.get('beacon', 'field_flow_id')
                 self.beacon_event_key = self.config.get('beacon','event_key')
                 self.beacon_event_type = self.config.get('beacon','event_type')
-                self.filter = self.config.get('beacon','filter')
+                # self.filter = self.config.get('beacon','filter')
+                self.filter = ''
                 self.verbose = self.config.config.getboolean('beacon', 'verbose')
                 self.auth_user = self.config.config.get('beacon','username')
                 self.auth_password = self.config.config.get('beacon', 'password')
