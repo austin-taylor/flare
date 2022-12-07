@@ -270,11 +270,8 @@ class elasticBeacon(object):
                 },
                 "sort": ["_doc"]
             }
-        # if fields:
-        #     query["_source"] = list(fields)
-        #     if self.domain_field != "''":
-        #         query["_source"].append(self.domain_field)
-        #     self.dprint(query)
+       
+        query["_source"] = self.data_fields
         
         print(f"SCAN QUERY: {query}")
         return query
