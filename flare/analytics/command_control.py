@@ -146,8 +146,8 @@ class elasticBeacon(object):
         self.info = '{info}[INFO]{endc}'.format(info=bcolors.OKBLUE, endc=bcolors.ENDC)
         self.success = '{green}[SUCCESS]{endc}'.format(green=bcolors.OKGREEN, endc=bcolors.ENDC)
         self.fields = ['dest_degree', 'occurrences', 'percent', 'interval']
-        if self.domain_field != "''":
-            self.fields.append(self.domain_field)
+        # if self.domain_field != "''":
+        #     self.fields.append(self.domain_field)
         self.fields += data_fields
         self.data_fields = data_fields
 
@@ -185,7 +185,7 @@ class elasticBeacon(object):
             print(("[DEBUG] " + str(msg)))
 
 
-    def hour_query(self, h, *fields):
+    def hour_query(self, h):
         """
 
         :param h: Number of hours to look for beaconing (recommend 24 if computer can support it)
@@ -193,10 +193,10 @@ class elasticBeacon(object):
         :return:
         """
         # Timestamp in ES is in milliseconds
-        NOW = int(time.time() * 1000)
-        SECONDS = 1000
-        MINUTES = 60 * SECONDS
-        HOURS = 60 * MINUTES
+        # NOW = int(time.time() * 1000)
+        # SECONDS = 1000
+        # MINUTES = 60 * SECONDS
+        # HOURS = 60 * MINUTES
         # lte = NOW
         lte = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S.%f%z')
         # gte = int(NOW - h * HOURS)
