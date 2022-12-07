@@ -327,7 +327,7 @@ class elasticBeacon(object):
         df['triad_freq'] = df.groupby('triad_id')['triad_id'].transform('count').fillna(0).astype(int)
         self.high_freq = list(df[df.triad_freq > self.MIN_OCCURRENCES].groupby('triad_id').groups.keys())
         # print(df)
-        df.fillna(0, inplace=True)
+        # df.fillna(0, inplace=True)
         return df
 
     def find_beacon(self, q_job, beacon_list):
