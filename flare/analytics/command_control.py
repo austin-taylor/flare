@@ -374,8 +374,8 @@ class elasticBeacon(object):
                             list_to_append.append(work.iloc[0][column])
                         else:
                             list_to_append.append("''")
-                    print("beacon found")
-                    print(list_to_append)
+                    # print("beacon found")
+                    # print(list_to_append)
                     beacon_list.append(list_to_append)
                     self.l_list.release()
 
