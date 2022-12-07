@@ -370,7 +370,7 @@ class elasticBeacon(object):
                     else:    
                         list_to_append = [SRC_DEGREE, OCCURRENCES, PERCENT, WINDOW]
                     for column in work.columns.tolist():
-                        list_to_append.append(work.iloc[0][column])
+                        list_to_append.append(work.iloc[0][column].fillna(0))
                     print("beacon found")
                     print(list_to_append)
                     beacon_list.append(list_to_append)
