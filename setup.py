@@ -2,7 +2,7 @@ from setuptools import find_packages, setup
 
 setup(
     name='Flare',
-    version='0.9',
+    version='0.91',
     platforms=["any"],  # or more specific, e.g. "win32", "cygwin", "osx"
     license="""MIT License
 
