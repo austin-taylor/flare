@@ -332,9 +332,7 @@ class elasticBeacon(object):
         return df
 
     def find_beacon(self, q_job, beacon_list):
-        print("Entrou na thread")
         while not q_job.empty():
-            print("Entrou no while")
             triad_id = q_job.get()
             self.l_df.acquire()
             work = self.flow_data[self.flow_data.triad_id == triad_id]
