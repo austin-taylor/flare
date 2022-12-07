@@ -352,18 +352,22 @@ class elasticBeacon(object):
                 if percent > self.MIN_PERCENT and total > self.MIN_OCCURRENCES:
                     PERCENT = str(int(percent))
                     WINDOW = str(window)
-                    SRC_IP = work[self.beacon_src_ip].unique()[0]
-                    DEST_IP = work[self.beacon_dest_ip].unique()[0]
-                    DEST_PORT = str(int(work[self.beacon_destination_port].unique()[0]))
+                    # SRC_IP = work[self.beacon_src_ip].unique()[0]
+                    # DEST_IP = work[self.beacon_dest_ip].unique()[0]
+                    # DEST_PORT = str(int(work[self.beacon_destination_port].unique()[0]))
                     # BYTES_TOSERVER = work[self.beacon_flow_bytes_toserver].sum()
+                    list_to_append = []
+                    for column in work.columns:
+                        list_to_append.append(work.iloc[0][column])
                     SRC_DEGREE = len(work[self.beacon_dest_ip].unique())
                     OCCURRENCES = total                    
                     self.l_list.acquire()
                     if self.domain_field != "''":
                         DOMAIN = work[self.domain_field].unique()[0]
-                        beacon_list.append([SRC_IP, DEST_IP, DEST_PORT, SRC_DEGREE, OCCURRENCES, PERCENT, WINDOW,DOMAIN])
+                        list_to_append.append([SRC_DEGREE, OCCURRENCES, PERCENT, WINDOW,DOMAIN])
                     else:    
-                        beacon_list.append([SRC_IP, DEST_IP, DEST_PORT, SRC_DEGREE, OCCURRENCES, PERCENT, WINDOW])
+                        list_to_append.append([SRC_DEGREE, OCCURRENCES, PERCENT, WINDOW])
+                    beacon_list.append(list_to_append)
                     self.l_list.release()
 
             q_job.task_done()
