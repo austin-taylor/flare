@@ -398,7 +398,7 @@ class elasticBeacon(object):
 
         beacon_list = list(beacon_list)
         beacon_df = pd.DataFrame(beacon_list,
-                                 columns=self.fields).dropna()
+                                 columns=self.fields)#.dropna()
         beacon_df.interval = beacon_df.interval.astype(int)
         beacon_df['dest_degree'] = beacon_df.groupby(self.beacon_dest_ip)[self.beacon_dest_ip].transform('count').fillna(0).astype(int)
         self.vprint('{info} Calculating destination degree.'.format(info=self.info))
