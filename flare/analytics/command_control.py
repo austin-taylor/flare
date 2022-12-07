@@ -328,11 +328,13 @@ class elasticBeacon(object):
         self.high_freq = list(df[df.triad_freq > self.MIN_OCCURRENCES].groupby('triad_id').groups.keys())
         # print(df)
         # df.fillna(0, inplace=True)
+        print("Finished gathering data...")
         return df
 
     def find_beacon(self, q_job, beacon_list):
-
+        print("Entrou na thread")
         while not q_job.empty():
+            print("Entrou no while")
             triad_id = q_job.get()
             self.l_df.acquire()
             work = self.flow_data[self.flow_data.triad_id == triad_id]
