@@ -313,13 +313,10 @@ class elasticBeacon(object):
         resp = helpers.scan(query=query, client=self.es, scroll="4m", size=3500, index=self.es_index, request_timeout=self.es_timeout,raise_on_error=False)
         df = pd.io.json.json_normalize([rec['_source'] for rec in resp])
         df.rename(columns=dict((x, x.replace("_source.", "")) for x in df.columns), inplace=True)
-        print("COLUMNS:")
-        print(df.columns)
-        print("self.fields:")
-        print(self.fields)
-        self.fields += df.columns.tolist()
-        print("self.fields after append:")
-        print(self.fields)
+        for field in df.columns.tolist():
+            if field not in self.fields:
+                self.fields.append(field)
+        
         if len(df) == 0:
             raise Exception("Elasticsearch did not retrieve any data. Please ensure your settings are correct inside the config file.")
 
