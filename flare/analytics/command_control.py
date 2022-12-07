@@ -144,7 +144,7 @@ class elasticBeacon(object):
         # self.whois = WhoisLookup()
         self.info = '{info}[INFO]{endc}'.format(info=bcolors.OKBLUE, endc=bcolors.ENDC)
         self.success = '{green}[SUCCESS]{endc}'.format(green=bcolors.OKGREEN, endc=bcolors.ENDC)
-        self.fields = [self.beacon_src_ip, self.beacon_dest_ip, self.beacon_destination_port, 'dest_degree', 'occurrences', 'percent', 'interval']
+        self.fields = ['dest_degree', 'occurrences', 'percent', 'interval']
         if self.domain_field != "''":
             self.fields.append(self.domain_field)
 
@@ -313,6 +313,7 @@ class elasticBeacon(object):
         resp = helpers.scan(query=query, client=self.es, scroll="4m", size=3500, index=self.es_index, request_timeout=self.es_timeout,raise_on_error=False)
         df = pd.io.json.json_normalize([rec['_source'] for rec in resp])
         df.rename(columns=dict((x, x.replace("_source.", "")) for x in df.columns), inplace=True)
+        self.fields.append(df.columns)
         if len(df) == 0:
             raise Exception("Elasticsearch did not retrieve any data. Please ensure your settings are correct inside the config file.")
 
